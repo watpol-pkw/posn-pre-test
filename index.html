@@ -1,0 +1,1592 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PKW POSN PRE-TEST</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- Chart.js for Reports -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- SheetJS for Excel Export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap');
+    
+    :root { --primary-color: #4f46e5; }
+    body { font-family: 'Prompt', sans-serif; color: #1e293b; background-color: #f8fafc; overflow: hidden; }
+    
+    .glass-card { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.6); box-shadow: 0 10px 40px -10px rgba(0,0,0,0.05); border-radius: 1.5rem; }
+    .glass-blue { background: rgba(238, 242, 255, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(199, 210, 254, 0.5); }
+    
+    .modern-input { width: 100%; padding: 0.875rem 1rem; border: 1px solid #e2e8f0; border-radius: 1rem; background-color: #f8fafc; margin-bottom: 1.25rem; transition: all 0.3s ease; font-family: 'Prompt', sans-serif; }
+    .modern-input:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); background-color: #fff; }
+    .modern-label { display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #475569; }
+    
+    .btn-primary { background: linear-gradient(to right, #4f46e5, #3b82f6); color: white; padding: 0.875rem 1.5rem; border-radius: 1rem; font-weight: 600; text-align: center; width: 100%; cursor: pointer; border: none; transition: all 0.3s ease; box-shadow: 0 4px 15px -3px rgba(79, 70, 229, 0.4); }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px -3px rgba(79, 70, 229, 0.5); }
+    
+    .btn-secondary { background: white; color: #475569; border: 1px solid #cbd5e1; padding: 0.875rem 1.5rem; border-radius: 1rem; font-weight: 600; text-align: center; width: 100%; cursor: pointer; transition: all 0.3s ease; }
+    .btn-secondary:hover { background: #f1f5f9; color: #0f172a; border-color: #94a3b8; }
+    
+    .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+    
+    .loader { border: 4px solid rgba(79, 70, 229, 0.2); border-top: 4px solid #4f46e5; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    .menu-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.875rem 1rem; border-radius: 0.75rem; font-weight: 600; color: #93c5fd; transition: all 0.2s; cursor: pointer; border-left: 4px solid transparent; }
+    .menu-item:hover { background-color: rgba(255,255,255,0.1); color: #ffffff; }
+    .menu-item.active { background-color: rgba(255,255,255,0.2); color: #ffffff; border-left-color: #60a5fa; }
+    
+    .app-hidden { display: none !important; }
+    
+    @media (min-width: 1024px) {
+      .desktop-closed { width: 0 !important; overflow: hidden !important; opacity: 0 !important; padding: 0 !important; border: none !important; }
+    }
+
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+    /* Print Styles */
+    @media print { 
+      body { background: white !important; font-family: 'Sarabun', sans-serif !important; font-size: 12pt !important; overflow: visible !important; height: auto !important; } 
+      #sidebar, #topnav, .no-print { display: none !important; } 
+      #main-content { overflow: visible !important; height: auto !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
+      #app { display: none !important; } 
+      .page-break { page-break-after: always; break-after: page; }
+      .print-only { display: block !important; }
+      
+      /* Enforce table headers to repeat on every page */
+      table { page-break-inside: auto; width: 100%; border-collapse: collapse; }
+      tr { page-break-inside: avoid; page-break-after: auto; }
+      thead { display: table-header-group; }
+      tfoot { display: table-footer-group; }
+    }
+    .print-only { display: none; }
+  </style>
+</head>
+<body class="antialiased flex h-screen w-full relative">
+
+  <div class="fixed inset-0 z-[-1] bg-gradient-to-br from-indigo-50 via-white to-blue-50 not-print"></div>
+
+  <!-- Loading Overlay -->
+  <div id="loading" class="app-hidden fixed inset-0 z-[9999] bg-white/80 backdrop-blur-sm flex justify-center items-center flex-col gap-4 transition-opacity duration-300">
+    <div class="loader"></div>
+    <div class="text-indigo-600 font-bold text-lg tracking-wide">กำลังประมวลผล...</div>
+  </div>
+
+  <!-- Sidebar -->
+  <aside id="sidebar" class="fixed lg:relative inset-y-0 left-0 w-72 bg-gradient-to-b from-blue-900 to-indigo-950 text-white flex-col z-[100] shadow-2xl lg:shadow-none transition-all duration-300 transform -translate-x-full lg:translate-x-0 flex shrink-0">
+    <div class="p-6 border-b border-white/10 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-4 w-full">
+        <div class="w-12 h-12 bg-white rounded-xl shadow-sm p-1 flex-shrink-0">
+          <img src="https://pkw.ac.th/pkw/toon/logo_pkw.jpg" class="w-full h-full object-contain">
+        </div>
+        <div class="overflow-hidden">
+          <div class="font-black text-white leading-tight tracking-tight text-lg drop-shadow-md whitespace-nowrap">PKW POSN<br>PRE-TEST</div>
+        </div>
+      </div>
+      <button onclick="toggleSidebar()" class="lg:hidden text-white/50 hover:text-white p-1">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+    </div>
+    
+    <div class="p-6 pb-4 border-b border-white/10 shrink-0">
+      <div class="text-xs uppercase tracking-wider text-blue-300 font-bold mb-3 opacity-80">บัญชีผู้ใช้</div>
+      <div class="flex items-center gap-3">
+        <img src="https://img2.pic.in.th/PKW-Mascotace29467b055eb87.png" class="w-12 h-12 rounded-full border-2 border-white/20 shadow-sm object-cover bg-white" id="sb-avatar">
+        <div class="overflow-hidden">
+          <div class="font-bold text-white text-sm truncate" id="sb-name">-</div>
+          <div class="text-[11px] text-white font-bold bg-white/20 inline-block px-2 py-0.5 rounded-full mt-0.5" id="sb-role">-</div>
+        </div>
+      </div>
+    </div>
+
+    <nav class="flex-1 overflow-y-auto p-4 space-y-1" id="sb-menu"></nav>
+
+    <div class="p-4 border-t border-white/10 shrink-0">
+      <button onclick="logout()" class="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-rose-300 hover:text-rose-100 hover:bg-rose-500/20 font-bold transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+        ออกจากระบบ
+      </button>
+    </div>
+  </aside>
+
+  <!-- Sidebar Overlay for Mobile -->
+  <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/50 z-[90] lg:hidden app-hidden backdrop-blur-sm transition-opacity duration-300"></div>
+
+  <!-- Main Content -->
+  <main id="main-content" class="flex-1 h-screen overflow-y-auto w-full relative flex flex-col not-print bg-slate-50 lg:bg-transparent">
+    
+    <!-- Top Navbar -->
+    <header id="topnav" class="app-hidden sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b-2 border-blue-400 px-4 py-3 flex items-center justify-between shadow-sm shrink-0">
+      <div class="flex items-center gap-3">
+        <button onclick="toggleSidebar()" class="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+        <span class="font-bold text-slate-800 lg:hidden">PKW POSN PRE-TEST</span>
+      </div>
+      <div class="glass-blue rounded-xl px-4 py-2 flex items-center gap-4 text-sm font-bold text-indigo-900 shadow-sm ml-auto">
+        <div class="flex items-center gap-2 hidden sm:flex"><svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg><span id="real-date">--</span></div>
+        <div class="w-px h-4 bg-slate-300 hidden sm:block"></div>
+        <div class="flex items-center gap-2"><svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span id="real-time">--:--</span></div>
+      </div>
+    </header>
+
+    <div id="app" class="flex-1 max-w-6xl mx-auto w-full p-4 md:p-8 pb-20 overflow-x-hidden"></div>
+  </main>
+
+  <!-- Templates -->
+  <div id="templates" class="app-hidden">
+    
+    <!-- LOGIN VIEW (V1.5.3) -->
+    <div id="view-login" class="fade-in max-w-5xl mx-auto mt-2 md:mt-4 flex flex-col md:flex-row h-full md:h-auto glass-card overflow-hidden shadow-2xl transition-all duration-300">
+      <!-- Left Side -->
+      <div class="md:w-1/2 p-4 md:p-6 bg-gradient-to-br from-blue-700 via-indigo-600 to-teal-500 flex flex-col justify-center relative text-white">
+        <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 24px 24px;"></div>
+        <div class="relative z-10 flex flex-col items-center text-center">
+          <div class="flex items-center justify-center gap-3 mb-4">
+            <img src="https://pkw.ac.th/pkw/toon/logo_pkw.jpg" class="h-12 w-12 md:h-14 md:w-14 object-contain bg-white rounded-2xl p-1.5 shadow-xl">
+            <img src="https://img1.pic.in.th/images/PKW-POSN.png" class="h-12 w-12 md:h-14 md:w-14 object-contain bg-white rounded-2xl p-1.5 shadow-xl">
+          </div>
+          <h1 class="text-lg md:text-xl font-black leading-tight mb-2 drop-shadow-md">โครงการทดสอบความรู้<br>เตรียมความพร้อมโอลิมปิกวิชาการ</h1>
+          <p class="text-blue-100 font-medium text-base mb-3">โรงเรียนภูเก็ตวิทยาลัย</p>
+          <div class="inline-block px-4 py-1 bg-white/20 backdrop-blur-md rounded-full font-black tracking-widest text-xs border border-white/30 shadow-sm">PKW POSN PRE-TEST</div>
+        </div>
+        
+        <div class="relative z-10 mt-6 space-y-2 w-full max-w-sm mx-auto hidden md:block">
+          <div class="bg-white/10 backdrop-blur-lg border border-white/20 p-3 rounded-2xl flex items-center gap-4 shadow-lg">
+            <div class="bg-white/20 p-2.5 rounded-xl"><svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg></div>
+            <div class="font-bold text-sm">สมัครสมาชิกระบบได้ด้วยตนเอง</div>
+          </div>
+          <div class="bg-white/10 backdrop-blur-lg border border-white/20 p-3 rounded-2xl flex items-center gap-4 shadow-lg">
+            <div class="bg-white/20 p-2.5 rounded-xl"><svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg></div>
+            <div class="font-bold text-sm">สมัครรายวิชาที่ต้องการสอบ</div>
+          </div>
+          <div class="bg-white/10 backdrop-blur-lg border border-white/20 p-3 rounded-2xl flex items-center gap-4 shadow-lg">
+            <div class="bg-white/20 p-2.5 rounded-xl"><svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path></svg></div>
+            <div class="font-bold text-sm">ดูผลการสอบ</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Side -->
+      <div class="md:w-1/2 p-4 md:p-6 bg-white flex flex-col justify-center relative flex-1">
+        <div class="text-left mb-4 flex items-center gap-3 shrink-0">
+          <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center shrink-0 shadow-sm">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
+          </div>
+          <h2 class="text-xl font-black text-slate-800">เข้าสู่ระบบ</h2>
+        </div>
+
+        <div class="bg-slate-100 p-1 rounded-xl flex mb-4 shadow-inner shrink-0">
+          <button type="button" onclick="setLoginRole('student')" id="tab-student" class="flex-1 py-1.5 text-xs md:text-sm font-bold rounded-lg transition-all text-indigo-700 bg-white shadow-sm">นักเรียน</button>
+          <button type="button" onclick="setLoginRole('admin')" id="tab-admin" class="flex-1 py-1.5 text-xs md:text-sm font-bold rounded-lg transition-all text-slate-500 hover:text-slate-700">ผู้ดูแลระบบ</button>
+        </div>
+
+        <div class="flex-1 flex flex-col min-h-[220px]">
+          <form onsubmit="handleLogin(event)" class="w-full">
+            <input type="hidden" id="login-role" value="student">
+            <div><label class="modern-label" id="lbl-login-id">รหัสนักเรียน (5 หลัก)</label><input type="text" id="login-id" class="modern-input" placeholder="12345" required></div>
+            <div><label class="modern-label">รหัสผ่าน</label><input type="password" id="login-pass" class="modern-input" placeholder="••••••••" required></div>
+            <button type="submit" class="btn-primary mt-2 shadow-lg text-lg">เข้าสู่ระบบ</button>
+          </form>
+
+          <div id="reg-link-container" class="mt-4 transition-all duration-300 overflow-hidden text-center">
+            <span class="text-slate-500 text-sm">ยังไม่มีบัญชีใช่หรือไม่?</span> <a href="#" onclick="switchView('register'); return false;" class="text-indigo-600 font-bold hover:underline">สมัครสมาชิกที่นี่</a>
+          </div>
+        </div>
+
+        <div class="mt-8 pt-6 border-t border-slate-100 text-center shrink-0">
+          <div class="flex justify-center gap-4 text-slate-300 mb-3 flex-wrap">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><title>ฟิสิกส์</title><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 20.25c4.97 0 9-2.253 9-5.033S16.97 10.184 12 10.184 3 12.437 3 15.217s4.03 5.033 9 5.033zm0 0c4.97 0 9-2.253 9-5.033S16.97 10.184 12 10.184 3 12.437 3 15.217s4.03 5.033 9 5.033zm0-10.066C16.97 10.184 21 7.931 21 5.151S16.97.118 12 .118 3 2.37 3 5.151s4.03 5.033 9 5.033z"></path></svg>
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><title>เคมี</title><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><title>ชีววิทยา</title><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><title>คณิตศาสตร์</title><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><title>คอมพิวเตอร์</title><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><title>ดาราศาสตร์</title><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path></svg>
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><title>ภาษาศาสตร์</title><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path></svg>
+          </div>
+          <div class="text-slate-400 text-[10px] font-medium leading-relaxed mt-3">
+            <p class="font-bold text-slate-500 mb-0.5">©2026 PKW POSN PRE-TEST V1.5.3</p>
+            <p>พัฒนาโดย นายจักรวิทย์ อรรฆกานต์ ณ ตะกั่วทุ่ง</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REGISTER VIEW -->
+    <div id="view-register" class="fade-in max-w-2xl mx-auto mt-6">
+      <div class="glass-card p-8 md:p-10 relative overflow-hidden shadow-xl">
+        <div class="text-center mb-8 border-b border-slate-100 pb-6">
+          <h2 class="text-3xl font-black text-slate-800">สมัครสมาชิกใหม่</h2>
+          <p class="text-slate-500 mt-2 font-medium">กรุณากรอกข้อมูลให้ครบถ้วนเพื่อใช้ในการสมัครสอบ</p>
+        </div>
+        <form onsubmit="handleRegister(event)">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">
+            <div><label class="modern-label">รหัสนักเรียน (5 หลัก)</label><input type="text" id="reg-id" pattern="[0-9]{5}" class="modern-input" placeholder="12345" required></div>
+            <div><label class="modern-label">รหัสผ่าน (6 ตัวขึ้นไป)</label><input type="password" id="reg-pass" minlength="6" class="modern-input" required></div>
+            <div><label class="modern-label">คำนำหน้าชื่อ</label><select id="reg-prefix" class="modern-input" required><option value="">เลือก</option><option value="เด็กชาย">เด็กชาย</option><option value="เด็กหญิง">เด็กหญิง</option><option value="นาย">นาย</option><option value="นางสาว">นางสาว</option></select></div>
+            <div><label class="modern-label">เบอร์โทรศัพท์</label><input type="tel" id="reg-phone" class="modern-input" required></div>
+            <div><label class="modern-label">ชื่อจริง</label><input type="text" id="reg-first" class="modern-input" required></div>
+            <div><label class="modern-label">นามสกุล</label><input type="text" id="reg-last" class="modern-input" required></div>
+            <div><label class="modern-label">ระดับชั้น</label><select id="reg-grade" class="modern-input" required><option value="">เลือก</option><option value="ม.1">ม.1</option><option value="ม.2">ม.2</option><option value="ม.3">ม.3</option><option value="ม.4">ม.4</option><option value="ม.5">ม.5</option><option value="ม.6">ม.6</option></select></div>
+            <div class="grid grid-cols-2 gap-4">
+              <div><label class="modern-label">ห้องเรียน</label><input type="number" id="reg-room" class="modern-input" required></div>
+              <div><label class="modern-label">เลขที่</label><input type="number" id="reg-roll" class="modern-input" required></div>
+            </div>
+          </div>
+          <div class="flex gap-4 mt-6 pt-6 border-t border-slate-200">
+            <button type="button" onclick="switchView('login')" class="btn-secondary w-1/3">ย้อนกลับ</button>
+            <button type="submit" class="btn-primary w-2/3 shadow-lg">ยืนยันการสมัคร</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- STUDENT VIEWS -->
+    
+    <!-- SD-HOME -->
+    <div id="view-sd-home" class="fade-in">
+      <div class="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-8 mb-8 text-white shadow-lg shadow-indigo-500/20 flex flex-col md:flex-row items-center gap-6 relative overflow-hidden transition-all duration-300 hover:shadow-indigo-500/40">
+        <div class="absolute -right-10 -top-10 opacity-10 pointer-events-none">
+          <svg class="w-64 h-64" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3L1 9l4 2.18v6L12 21l7-3.82v-6l2-1.09V17h2V9L12 3zm6.82 6L12 12.72 5.18 9 12 5.28 18.82 9zM17 15.99l-5 2.73-5-2.73v-3.72L12 15l5-2.73v3.72z"/></svg>
+        </div>
+        <img src="https://img2.pic.in.th/PKW-Mascotace29467b055eb87.png" class="w-24 h-24 rounded-2xl border-4 border-white/20 shadow-inner object-cover bg-white/10 relative z-10" id="home-avatar">
+        <div class="text-center md:text-left relative z-10">
+          <div class="text-blue-200 font-bold tracking-wider text-sm mb-1 uppercase">ยินดีต้อนรับเข้าสู่ระบบ</div>
+          <h2 class="text-3xl font-black mb-2" id="home-name">ชื่อ นามสกุล</h2>
+          <p class="text-blue-100 font-medium" id="home-info">ระดับชั้น -</p>
+        </div>
+      </div>
+
+      <div class="bg-gradient-to-r from-amber-400 to-orange-500 p-1 rounded-2xl mb-8 shadow-md hover:shadow-lg transition-shadow">
+        <div class="bg-white rounded-xl p-6 md:p-8 h-full">
+          <h3 class="text-2xl font-black text-amber-600 mb-4 flex items-center gap-3 border-b border-amber-100 pb-4">
+            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path></svg>
+            ประกาศ
+          </h3>
+          <div id="home-announcement" class="text-slate-700 text-lg leading-relaxed whitespace-pre-wrap font-medium">ไม่มีประกาศ</div>
+        </div>
+      </div>
+
+      <h3 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+        <svg class="w-6 h-6 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        วิชาสอบที่กำลังจะมาถึง
+      </h3>
+      <div id="home-upcoming" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+    </div>
+
+    <!-- SD-ENROLL -->
+    <div id="view-sd-enroll" class="fade-in">
+      <h2 class="text-3xl font-black text-slate-800 mb-2">สมัครสอบ</h2>
+      <p class="text-slate-500 mb-6 font-medium">รายวิชาที่เปิดรับสมัคร</p>
+      <div id="enroll-list" class="grid grid-cols-1 xl:grid-cols-2 gap-6"></div>
+    </div>
+
+    <!-- SD-TICKETS -->
+    <div id="view-sd-tickets" class="fade-in">
+      <h2 class="text-3xl font-black text-slate-800 mb-2">บัตรเข้าสอบ</h2>
+      <p class="text-slate-500 mb-6 font-medium">รายละเอียดห้องสอบและที่นั่งสอบของคุณ</p>
+      <div id="tickets-list" class="grid grid-cols-1 lg:grid-cols-2 gap-6"></div>
+    </div>
+
+    <!-- SD-RESULTS (V1.5.3) -->
+    <div id="view-sd-results" class="fade-in">
+      <h2 class="text-3xl font-black text-slate-800 mb-2">ผลการสอบ</h2>
+      <p class="text-slate-500 mb-6 font-medium">ประวัติการสอบและคะแนนที่ได้แบบละเอียด</p>
+      <div class="glass-card p-0 overflow-hidden border border-slate-200">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse whitespace-nowrap">
+            <thead class="bg-slate-50 border-b border-slate-200 text-slate-700">
+              <tr>
+                <th class="p-4 font-semibold">รหัส / วิชาสอบ</th>
+                <th class="p-4 font-semibold text-center">คะแนน</th>
+                <th class="p-4 font-semibold text-center">T-Score</th>
+                <th class="p-4 font-semibold text-center">Percentile</th>
+                <th class="p-4 font-semibold text-center">รางวัล</th>
+                <th class="p-4 font-semibold text-center">การจัดการ</th>
+              </tr>
+            </thead>
+            <tbody id="results-list" class="divide-y divide-slate-100 bg-white/50"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- SD-PROFILE (V1.5.3) -->
+    <div id="view-sd-profile" class="fade-in max-w-2xl">
+      <h2 class="text-3xl font-black text-slate-800 mb-6">แก้ไขข้อมูลส่วนตัว</h2>
+      <div class="glass-card p-8 border border-slate-200">
+        <form onsubmit="handleEditProfile(event)">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">
+            <div class="md:col-span-2">
+              <label class="modern-label">รหัสนักเรียน (ไม่สามารถแก้ไขได้)</label>
+              <input type="text" id="ep-id" class="modern-input bg-slate-100 text-slate-500 font-bold" disabled>
+            </div>
+            <div><label class="modern-label">รหัสผ่าน (เว้นว่างไว้ถ้าไม่ต้องการเปลี่ยน)</label><input type="password" id="ep-pass" minlength="6" class="modern-input"></div>
+            <div><label class="modern-label">เบอร์โทรศัพท์</label><input type="tel" id="ep-phone" class="modern-input" required></div>
+            <div><label class="modern-label">คำนำหน้าชื่อ</label><select id="ep-prefix" class="modern-input" required><option value="เด็กชาย">เด็กชาย</option><option value="เด็กหญิง">เด็กหญิง</option><option value="นาย">นาย</option><option value="นางสาว">นางสาว</option></select></div>
+            <div><label class="modern-label">ระดับชั้น</label><select id="ep-grade" class="modern-input" required><option value="ม.1">ม.1</option><option value="ม.2">ม.2</option><option value="ม.3">ม.3</option><option value="ม.4">ม.4</option><option value="ม.5">ม.5</option><option value="ม.6">ม.6</option></select></div>
+            <div><label class="modern-label">ชื่อจริง</label><input type="text" id="ep-first" class="modern-input" required></div>
+            <div><label class="modern-label">นามสกุล</label><input type="text" id="ep-last" class="modern-input" required></div>
+            <div><label class="modern-label">ห้องเรียน</label><input type="number" id="ep-room" class="modern-input" required></div>
+            <div><label class="modern-label">เลขที่</label><input type="number" id="ep-roll" class="modern-input" required></div>
+          </div>
+          <button type="submit" class="btn-primary mt-4">บันทึกการแก้ไข</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ADMIN VIEWS -->
+    
+    <!-- AD-HOME -->
+    <div id="view-ad-home" class="fade-in">
+      <div class="bg-gradient-to-r from-indigo-700 to-blue-800 rounded-3xl p-8 mb-8 text-white shadow-xl flex items-center relative overflow-hidden transition-all duration-300 hover:shadow-blue-900/30">
+        <div class="absolute right-0 top-0 bottom-0 opacity-10 pointer-events-none transform translate-x-10 -translate-y-4">
+          <svg class="h-48 w-48 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3L1 9l4 2.18v6L12 21l7-3.82v-6l2-1.09V17h2V9L12 3zm6.82 6L12 12.72 5.18 9 12 5.28 18.82 9zM17 15.99l-5 2.73-5-2.73v-3.72L12 15l5-2.73v3.72z"/></svg>
+        </div>
+        <div class="flex items-center gap-6 relative z-10 w-full">
+          <img src="https://img1.pic.in.th/images/PKW-POSN.png" class="h-20 w-20 object-contain bg-white rounded-2xl p-2 shadow-lg hidden sm:block">
+          <div>
+            <h2 class="text-3xl md:text-4xl font-black mb-2 tracking-tight" id="ad-welcome-title">ยินดีต้อนรับ ผู้ดูแลระบบ</h2>
+            <p class="text-indigo-200 text-sm md:text-base font-medium">โครงการทดสอบความรู้เตรียมความพร้อมโอลิมปิกวิชาการ PKW POSN PRE-TEST</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8" id="ad-stats"></div>
+    </div>
+
+    <!-- AD-REPORTS -->
+    <div id="view-ad-reports" class="fade-in">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+        <div><h2 class="text-3xl font-black text-slate-800">รายงานผล (Reports)</h2><p class="text-slate-500 mt-1">สรุปข้อมูลสถิติของโครงการ</p></div>
+      </div>
+      
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        <div class="bg-indigo-50 border border-indigo-100 p-6 rounded-2xl text-center"><div class="text-indigo-600 font-bold text-sm mb-1">นักเรียนทั้งหมด</div><div id="rp-total-students" class="text-3xl font-black text-indigo-900">0</div></div>
+        <div class="bg-emerald-50 border border-emerald-100 p-6 rounded-2xl text-center"><div class="text-emerald-600 font-bold text-sm mb-1">ยอดการสมัครสอบรวม</div><div id="rp-total-regs" class="text-3xl font-black text-emerald-900">0</div></div>
+        <div class="bg-amber-50 border border-amber-100 p-6 rounded-2xl text-center"><div class="text-amber-600 font-bold text-sm mb-1">รายวิชาสอบที่เปิด</div><div id="rp-total-exams" class="text-3xl font-black text-amber-900">0</div></div>
+      </div>
+      
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="glass-card p-6 border border-slate-200 flex flex-col">
+          <h3 class="font-bold text-slate-800 mb-4 text-lg border-b border-slate-100 pb-2">📊 จำนวนผู้สมัครรายวิชา</h3>
+          <div class="relative flex-1 min-h-[250px] max-h-[300px]">
+            <canvas id="reportChart"></canvas>
+          </div>
+        </div>
+        
+        <div class="glass-card p-0 border border-slate-200 overflow-hidden flex flex-col max-h-[400px]">
+          <h3 class="font-bold text-slate-800 p-6 pb-4 text-lg border-b border-slate-100 bg-white shrink-0">📈 สถิติคะแนนรายวิชา</h3>
+          <div class="overflow-y-auto flex-1 p-0">
+            <table class="w-full text-left text-sm border-collapse">
+              <thead class="bg-slate-50 sticky top-0"><tr class="border-b border-slate-200"><th class="p-3 font-semibold text-slate-700">วิชา</th><th class="p-3 font-semibold text-center text-emerald-600">สูงสุด</th><th class="p-3 font-semibold text-center text-rose-600">ต่ำสุด</th><th class="p-3 font-semibold text-center text-indigo-600">เฉลี่ย</th></tr></thead>
+              <tbody id="rp-scores-body" class="divide-y divide-slate-100 bg-white/50"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AD-STUDENTS -->
+    <div id="view-ad-students" class="fade-in">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+        <div><h2 class="text-3xl font-black text-slate-800">จัดการข้อมูลนักเรียน</h2></div>
+        <button onclick="openStudentModal()" class="btn-primary w-full md:w-auto flex items-center justify-center gap-2 shadow-lg">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg> เพิ่มนักเรียน
+        </button>
+      </div>
+      <div class="mb-4">
+        <input type="text" id="ad-search-student" oninput="filterStudents()" class="modern-input !mb-0 shadow-sm" placeholder="🔍 ค้นหาด้วย รหัสนักเรียน หรือ ชื่อ-สกุล...">
+      </div>
+      <div class="glass-card p-0 overflow-hidden border border-slate-200 h-[600px] flex flex-col">
+        <div class="overflow-y-auto flex-1">
+          <table class="w-full text-left border-collapse">
+            <thead class="sticky top-0 bg-slate-50 border-b border-slate-200 z-10">
+              <tr>
+                <th class="p-4 font-semibold text-slate-700">รหัส</th>
+                <th class="p-4 font-semibold text-slate-700">ชื่อ-สกุล</th>
+                <th class="p-4 font-semibold text-slate-700">ชั้นเรียน</th>
+                <th class="p-4 font-semibold text-slate-700 text-right">การจัดการ</th>
+              </tr>
+            </thead>
+            <tbody id="ad-students-list" class="divide-y divide-slate-100 bg-white/50"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- AD-EXAMS -->
+    <div id="view-ad-exams" class="fade-in">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+        <div><h2 class="text-3xl font-black text-slate-800">จัดการวิชาสอบ</h2></div>
+        <button onclick="openExamModal()" class="btn-primary w-full md:w-auto flex items-center justify-center gap-2 shadow-lg">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg> เพิ่มวิชาสอบ
+        </button>
+      </div>
+      <div class="glass-card p-0 overflow-hidden border border-slate-200">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse whitespace-nowrap">
+            <thead>
+              <tr class="bg-indigo-50/80 text-indigo-900 border-b border-indigo-100">
+                <th class="p-4 font-semibold">รหัส / วิชา</th>
+                <th class="p-4 font-semibold">วันสอบ / เปิดรับสมัคร</th>
+                <th class="p-4 font-semibold text-center">รับสมัคร</th>
+                <th class="p-4 font-semibold text-right">การจัดการ</th>
+              </tr>
+            </thead>
+            <tbody id="ad-exams-list" class="divide-y divide-slate-100 bg-white/50"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- AD-ROOMS -->
+    <div id="view-ad-rooms" class="fade-in">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+        <div><h2 class="text-3xl font-black text-slate-800">จัดห้องสอบและที่นั่ง</h2><p class="text-slate-500 mt-1">รายการวิชาสอบในระบบทั้งหมด</p></div>
+      </div>
+      <div class="glass-card p-0 overflow-hidden border border-slate-200">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-50 border-b border-slate-200 text-slate-700">
+                <th class="p-4 font-semibold">รหัส / วิชา</th>
+                <th class="p-4 font-semibold">วันที่สอบ</th>
+                <th class="p-4 font-semibold text-center">ยอดผู้สมัคร</th>
+                <th class="p-4 font-semibold text-center">รอจัดห้อง</th>
+                <th class="p-4 font-semibold text-right">การจัดการ</th>
+              </tr>
+            </thead>
+            <tbody id="ad-rooms-list" class="divide-y divide-slate-100 bg-white/50"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- AD-SCORES (V1.5.3) -->
+    <div id="view-ad-scores" class="fade-in">
+      <h2 class="text-3xl font-black text-slate-800 mb-6">บันทึกคะแนน</h2>
+      
+      <div class="glass-card p-6 border border-slate-200 mb-6 relative z-20">
+        <label class="modern-label">ค้นหาและเลือกวิชาสอบ (รหัสวิชา / ชื่อวิชา)</label>
+        <div class="relative">
+          <input type="text" id="as-search" oninput="searchScoreExam()" placeholder="เช่น ว30201 หรือ ฟิสิกส์..." class="modern-input !mb-0 shadow-sm" autocomplete="off">
+          <div id="as-dropdown" class="absolute w-full mt-2 bg-white border border-slate-200 shadow-xl rounded-xl max-h-64 overflow-y-auto hidden"></div>
+        </div>
+      </div>
+      
+      <div id="as-workspace" class="hidden">
+        <div class="glass-card p-6 border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 relative z-10 bg-indigo-50/50">
+          <div>
+            <h3 class="text-xl font-bold text-indigo-900" id="as-exam-name">-</h3>
+            <p class="text-slate-500 text-sm mt-1">อัปโหลดไฟล์ CSV เพื่อบันทึกคะแนนรวดเร็ว (Format: <code class="bg-white px-1 rounded border border-slate-200 text-rose-500">student_id,score,exam_code</code>)</p>
+          </div>
+          <div class="flex gap-2">
+            <input type="file" id="as-csv-file" accept=".csv" class="hidden" onchange="handleCSVUpload(event)">
+            <button onclick="document.getElementById('as-csv-file').click()" class="bg-white border border-indigo-200 text-indigo-700 font-bold px-4 py-2 rounded-lg shadow-sm hover:bg-indigo-50 flex items-center gap-2 transition-colors">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg> อัปโหลด CSV
+            </button>
+            <button onclick="saveResultsDirectly()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-6 py-2 rounded-lg shadow-sm transition-colors">บันทึกคะแนน</button>
+          </div>
+        </div>
+        
+        <div class="glass-card p-0 overflow-hidden border border-slate-200 h-[600px] flex flex-col relative z-0">
+          <div class="overflow-y-auto flex-1 p-0">
+            <table class="w-full text-left text-sm border-collapse">
+              <thead class="bg-slate-50 border-b border-slate-200 sticky top-0 z-10">
+                <tr><th class="p-4 font-semibold text-slate-700">รหัส/ชื่อ-สกุล</th><th class="p-4 font-semibold text-slate-700">ห้องสอบ/ที่นั่ง</th><th class="p-4 font-semibold text-center text-slate-700">สถานะขาดสอบ</th><th class="p-4 font-semibold text-slate-700">คะแนนที่ได้</th></tr>
+              </thead>
+              <tbody id="as-scores-body" class="divide-y divide-slate-100 bg-white/50"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AD-SUBJ-SCORES (V1.5.3) -->
+    <div id="view-ad-subj-scores" class="fade-in">
+      <h2 class="text-3xl font-black text-slate-800 mb-6">คะแนนรายวิชา</h2>
+      
+      <div class="glass-card p-6 border border-slate-200 mb-6 relative z-20">
+        <label class="modern-label">ค้นหาและเลือกวิชาสอบ (รหัสวิชา / ชื่อวิชา)</label>
+        <div class="relative">
+          <input type="text" id="ass-search" oninput="searchSubjScoreExam()" placeholder="เช่น ว30201 หรือ ฟิสิกส์..." class="modern-input !mb-0 shadow-sm" autocomplete="off">
+          <div id="ass-dropdown" class="absolute w-full mt-2 bg-white border border-slate-200 shadow-xl rounded-xl max-h-64 overflow-y-auto hidden"></div>
+        </div>
+      </div>
+      
+      <div id="ass-workspace" class="hidden">
+        <div class="glass-card p-6 border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 relative z-10 bg-white/50">
+          <div>
+            <h3 class="text-xl font-bold text-indigo-900" id="ass-exam-name">-</h3>
+            <p id="ass-stats" class="text-slate-500 text-sm mt-1"></p>
+          </div>
+        </div>
+        
+        <div class="glass-card p-0 overflow-hidden border border-slate-200 h-[600px] flex flex-col relative z-0">
+          <div class="overflow-y-auto flex-1 p-0">
+            <table class="w-full text-left text-sm border-collapse">
+              <thead class="bg-slate-50 border-b border-slate-200 sticky top-0 z-10">
+                <tr><th class="p-4 font-semibold text-slate-700">รหัส/ชื่อ-สกุล</th><th class="p-4 font-semibold text-center text-slate-700">คะแนน</th><th class="p-4 font-semibold text-center text-slate-700">T-Score</th><th class="p-4 font-semibold text-center text-slate-700">Percentile</th><th class="p-4 font-semibold text-center text-slate-700">รางวัล</th></tr>
+              </thead>
+              <tbody id="ass-scores-body" class="divide-y divide-slate-100 bg-white/50"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AD-ANNOUNCE -->
+    <div id="view-ad-announce" class="fade-in max-w-2xl">
+      <h2 class="text-3xl font-black text-slate-800 mb-6">แจ้งประกาศ</h2>
+      <div class="glass-card p-8 border border-slate-200">
+        <form onsubmit="saveAnnouncement(event)">
+          <label class="modern-label">ข้อความประกาศ (จะไปแสดงในหน้าหลักของนักเรียนทุกคน)</label>
+          <textarea id="ad-ann-text" class="modern-input h-48 resize-none shadow-sm" placeholder="พิมพ์ประกาศที่นี่..."></textarea>
+          <button type="submit" class="btn-primary mt-2 shadow-lg">บันทึกประกาศ</button>
+        </form>
+      </div>
+    </div>
+    
+  </div>
+
+  <!-- MODALS -->
+
+  <!-- Student Modal -->
+  <div id="modal-student" class="app-hidden fixed inset-0 z-[100] bg-slate-900/40 backdrop-blur-sm flex justify-center items-center p-4 transition-opacity duration-300">
+    <div class="glass-card w-full max-w-2xl max-h-[90vh] overflow-y-auto p-8 shadow-2xl">
+      <div class="flex justify-between items-center mb-6 border-b border-slate-100 pb-4">
+        <h3 class="text-2xl font-black text-slate-800" id="modal-student-title">เพิ่มนักเรียน</h3>
+        <button type="button" onclick="closeModal('modal-student')" class="text-slate-400 hover:text-slate-600"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+      </div>
+      <form onsubmit="saveStudent(event)">
+        <input type="hidden" id="ms-is-edit" value="false">
+        <input type="hidden" id="ms-old-id" value="">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">
+          <div><label class="modern-label">รหัสนักเรียน (5 หลัก)</label><input type="text" id="ms-id" pattern="[0-9]{5}" class="modern-input" required></div>
+          <div><label class="modern-label">รหัสผ่าน</label><input type="text" id="ms-pass" minlength="6" class="modern-input" required></div>
+          <div><label class="modern-label">คำนำหน้าชื่อ</label><select id="ms-prefix" class="modern-input" required><option value="">เลือก</option><option value="เด็กชาย">เด็กชาย</option><option value="เด็กหญิง">เด็กหญิง</option><option value="นาย">นาย</option><option value="นางสาว">นางสาว</option></select></div>
+          <div><label class="modern-label">เบอร์โทรศัพท์</label><input type="tel" id="ms-phone" class="modern-input" required></div>
+          <div><label class="modern-label">ชื่อจริง</label><input type="text" id="ms-first" class="modern-input" required></div>
+          <div><label class="modern-label">นามสกุล</label><input type="text" id="ms-last" class="modern-input" required></div>
+          <div><label class="modern-label">ระดับชั้น</label><select id="ms-grade" class="modern-input" required><option value="">เลือก</option><option value="ม.1">ม.1</option><option value="ม.2">ม.2</option><option value="ม.3">ม.3</option><option value="ม.4">ม.4</option><option value="ม.5">ม.5</option><option value="ม.6">ม.6</option></select></div>
+          <div class="grid grid-cols-2 gap-4">
+            <div><label class="modern-label">ห้องเรียน</label><input type="number" id="ms-room" class="modern-input" required></div>
+            <div><label class="modern-label">เลขที่</label><input type="number" id="ms-roll" class="modern-input" required></div>
+          </div>
+        </div>
+        <div class="text-xs text-amber-600 font-bold mb-4 hidden" id="ms-warn-edit">⚠️ การแก้รหัสนักเรียน จะทำให้ Username เปลี่ยนแปลง และดึงประวัติการสอบทั้งหมดไปที่รหัสใหม่</div>
+        <div class="flex gap-4 mt-2 pt-6 border-t border-slate-200">
+          <button type="button" onclick="closeModal('modal-student')" class="btn-secondary w-1/3">ยกเลิก</button>
+          <button type="submit" class="btn-primary w-2/3 shadow-md">บันทึกข้อมูล</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Exam Modal -->
+  <div id="modal-exam" class="app-hidden fixed inset-0 z-[100] bg-slate-900/40 backdrop-blur-sm flex justify-center items-center p-4 transition-opacity duration-300">
+    <div class="glass-card w-full max-w-2xl max-h-[90vh] overflow-y-auto p-8 shadow-2xl">
+      <div class="flex justify-between items-center mb-6 border-b border-slate-100 pb-4">
+        <h3 class="text-2xl font-black text-slate-800" id="modal-exam-title">เพิ่มวิชาสอบ</h3>
+        <button onclick="closeModal('modal-exam')" class="text-slate-400 hover:text-slate-600"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+      </div>
+      <form onsubmit="saveExam(event)">
+        <input type="hidden" id="ex-id">
+        <div class="flex gap-4">
+          <div class="w-1/3"><label class="modern-label">รหัสวิชา</label><input type="text" id="ex-code" class="modern-input font-bold" required placeholder="เช่น ว30201"></div>
+          <div class="w-2/3"><label class="modern-label">ชื่อวิชาสอบ</label><input type="text" id="ex-name" class="modern-input font-bold" required></div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200 mb-4">
+          <div><label class="modern-label">วันที่สอบ</label><input type="date" id="ex-date" class="modern-input" required></div>
+          <div><label class="modern-label">จำนวนรับ (ใส่ 999 หากไม่จำกัด)</label><input type="number" id="ex-cap" class="modern-input" required min="1"></div>
+          <div><label class="modern-label">เริ่มเวลา (เช่น 09:00)</label><input type="time" id="ex-start" class="modern-input" required></div>
+          <div><label class="modern-label">ถึงเวลา (เช่น 11:00)</label><input type="time" id="ex-end" class="modern-input" required></div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-indigo-50/50 p-4 rounded-xl border border-indigo-100 mb-6">
+          <div><label class="modern-label">เปิดรับสมัคร</label><input type="date" id="ex-reg-open" class="modern-input" required></div>
+          <div><label class="modern-label">ปิดรับสมัคร</label><input type="date" id="ex-reg-close" class="modern-input" required></div>
+        </div>
+        <label class="modern-label border-b border-slate-200 pb-2 mb-3">เลือกระดับชั้น</label>
+        <div class="flex gap-3 flex-wrap mb-8" id="ex-grade-container"></div>
+        <div class="flex gap-4 pt-4 border-t border-slate-200">
+          <button type="button" onclick="closeModal('modal-exam')" class="btn-secondary w-1/3">ยกเลิก</button>
+          <button type="submit" class="btn-primary w-2/3 shadow-md">บันทึกข้อมูล</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Rooms Management Modal -->
+  <div id="modal-rooms" class="app-hidden fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex justify-center items-center p-4 transition-opacity duration-300">
+    <div class="bg-white w-full max-w-4xl h-[90vh] flex flex-col rounded-2xl shadow-2xl overflow-hidden">
+      <div class="p-6 border-b border-slate-200 bg-slate-50 flex justify-between items-center shrink-0">
+        <div><h3 class="text-2xl font-black text-slate-800">จัดห้องสอบและที่นั่ง</h3><p class="text-slate-500 font-bold" id="room-exam-name">-</p></div>
+        <button onclick="closeModal('modal-rooms'); loadAdRooms();" class="text-slate-400 hover:text-slate-600 bg-slate-200 p-2 rounded-lg transition-colors"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+      </div>
+      
+      <div class="p-6 shrink-0 border-b border-slate-100">
+        <div class="flex flex-wrap gap-4 items-center justify-between">
+          <form onsubmit="addRoom(event)" class="flex gap-2 w-full md:w-auto">
+            <input type="text" id="rm-add-name" placeholder="ชื่อห้องสอบ" class="modern-input !mb-0 w-full md:w-48 shadow-sm" required>
+            <input type="number" id="rm-add-cap" placeholder="ความจุ" class="modern-input !mb-0 w-24 shadow-sm" required min="1">
+            <button type="submit" class="bg-indigo-600 text-white px-4 rounded-lg font-bold hover:bg-indigo-700 shadow-sm whitespace-nowrap transition-colors">+ เพิ่มห้อง</button>
+          </form>
+          <div class="flex gap-2 w-full md:w-auto justify-end">
+            <button onclick="autoAssignSeats()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-indigo-700 shadow-sm transition-colors">จัดที่นั่งอัตโนมัติ (ก-ฮ)</button>
+            <button onclick="printRoster(currentExamId)" class="bg-emerald-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-emerald-600 shadow-sm transition-colors">พิมพ์ใบรายชื่อ</button>
+          </div>
+        </div>
+        <div class="mt-4 flex flex-wrap gap-4 md:gap-6 text-sm font-bold bg-slate-50 p-4 rounded-xl border border-slate-200">
+          <div class="text-slate-700 w-full sm:w-auto">ผู้สมัครรวม: <span id="rm-total-enrolled" class="text-indigo-600 text-lg ml-1">0</span></div>
+          <div class="text-slate-700 w-full sm:w-auto">ความจุห้องรวม: <span id="rm-total-cap" class="text-emerald-600 text-lg ml-1">0</span></div>
+          <div class="text-slate-700 w-full sm:w-auto">รอจัดที่นั่ง: <span id="rm-unassigned" class="text-rose-600 text-lg ml-1">0</span></div>
+        </div>
+      </div>
+      
+      <div class="flex-1 overflow-y-auto p-0 bg-white">
+        <table class="w-full text-left border-collapse">
+          <thead class="bg-slate-100 sticky top-0 border-b border-slate-200"><th class="p-4 font-semibold text-slate-700">ชื่อห้องสอบ</th><th class="p-4 font-semibold text-center text-slate-700">ความจุ (ที่นั่ง)</th><th class="p-4 font-semibold text-center text-slate-700">จัดแล้ว (คน)</th><th class="p-4 font-semibold text-right text-slate-700">การจัดการ</th></thead>
+          <tbody id="rooms-list" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Print Roster Container -->
+  <div id="print-container" class="print-only"></div>
+
+  <script>
+    const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebasedatabase.app/';
+    const SECRET = 'qIqIxmRQXI9WnMsoMeGCOGoxeOpTcWryvMbCpHD9'; 
+    
+    const db = {
+      url: path => `${DB_URL}${path}.json?auth=${SECRET}`,
+      get: async path => { const r = await fetch(db.url(path)); return r.ok ? await r.json() : null; },
+      put: async (path, data) => await fetch(db.url(path), { method:'PUT', body:JSON.stringify(data) }),
+      patch: async (path, data) => await fetch(db.url(path), { method:'PATCH', body:JSON.stringify(data) }),
+      del: async path => await fetch(db.url(path), { method:'DELETE' })
+    };
+
+    let u=null, r=null, allExams=[], currentExamId=null, regsCache=[], roomsCache=[], allStudents=[];
+
+    const showLoad = s => {
+      const l = document.getElementById('loading');
+      if(s) { l.classList.remove('app-hidden'); setTimeout(()=>l.style.opacity='1',10); }
+      else { l.style.opacity='0'; setTimeout(()=>l.classList.add('app-hidden'),300); }
+    };
+    
+    const closeModal = id => document.getElementById(id).classList.add('app-hidden');
+    
+    function toggleSidebar() {
+      const sb = document.getElementById('sidebar');
+      if(window.innerWidth >= 1024) {
+        sb.classList.toggle('desktop-closed');
+      } else {
+        sb.classList.toggle('-translate-x-full');
+        document.getElementById('sidebar-overlay').classList.toggle('app-hidden');
+      }
+    }
+
+    const sAlert = (title, text, icon='info') => Swal.fire({ title, text, icon, confirmButtonText: 'ตกลง', confirmButtonColor: '#4f46e5' });
+    const sConfirm = async (title, text) => {
+      const res = await Swal.fire({ title, text, icon: 'warning', showCancelButton: true, confirmButtonColor: '#10b981', cancelButtonColor: '#ef4444', confirmButtonText: 'ยืนยัน', cancelButtonText: 'ยกเลิก' });
+      return res.isConfirmed;
+    };
+
+    function formatThaiDate(isoString) {
+      if(!isoString) return '-';
+      const d = new Date(isoString);
+      if(isNaN(d)) return isoString;
+      const thMonth = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+      return `${d.getDate()} ${thMonth[d.getMonth()]} ${d.getFullYear() + 543}`;
+    }
+
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('real-date').textContent = formatThaiDate(now);
+      document.getElementById('real-time').textContent = now.toLocaleTimeString('th-TH', { hour:'2-digit', minute:'2-digit', second:'2-digit' }) + ' น.';
+    }
+    setInterval(updateClock, 1000); updateClock();
+
+    function switchView(v) {
+      document.getElementById('app').innerHTML = '';
+      const tpl = document.getElementById('view-'+v);
+      if(tpl) document.getElementById('app').appendChild(tpl.cloneNode(true));
+      
+      const sb = document.getElementById('sidebar');
+      const tn = document.getElementById('topnav');
+      
+      if(v==='login' || v==='register') { 
+        sb.classList.add('app-hidden'); tn.classList.add('app-hidden');
+      } else { 
+        sb.classList.remove('app-hidden'); tn.classList.remove('app-hidden');
+        document.getElementById('sb-name').textContent = u.firstName ? `${u.firstName} ${u.lastName}` : u.name;
+        document.getElementById('sb-role').textContent = r==='student' ? `ชั้น ${u.grade}/${u.room}` : u.name; 
+      }
+    }
+
+    function renderMenu(activeId) {
+      const menu = document.getElementById('sb-menu'); menu.innerHTML = '';
+      const iconClass = "w-5 h-5";
+      const addItem = (id, iconSvg, text, view) => {
+        const act = activeId === id ? 'active' : '';
+        menu.innerHTML += `<div onclick="renderMenu('${id}'); switchView('${view}'); if(window.innerWidth<1024) toggleSidebar(); initView('${id}');" class="menu-item ${act}">${iconSvg} <span>${text}</span></div>`;
+      };
+      
+      if(r==='student') {
+        addItem('home', `<svg class="${iconClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>`, 'หน้าหลัก', 'sd-home');
+        addItem('enroll', `<svg class="${iconClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>`, 'สมัครสอบ', 'sd-enroll');
+        addItem('tickets', `<svg class="${iconClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path></svg>`, 'บัตรเข้าสอบ', 'sd-tickets');
+        addItem('results', `<svg class="${iconClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`, 'ผลการสอบ', 'sd-results');
+        addItem('profile', `<svg class="${iconClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>`, 'แก้ไขข้อมูล', 'sd-profile');
+      } else {
+        const isExec = u.role === 'executive';
+        const isMgr = u.role === 'manager';
+        
+        if (isExec) {
+          addItem('ad-home', `<svg class="${iconClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2z"></path></svg>`, 'แผงควบคุม', 'ad-home');
+          addItem('ad-subj-scores', `<svg class="${iconClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 14l9-5-9-5-9 5 9 5z"></path><path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"></path></svg>`, 'คะแนนรายวิชา', 'ad-subj-scores');
+          addItem('ad-reports', `<svg class="${iconClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>`, 'รายงานผล', 'ad-reports');
+        } else {
+          addItem('ad-home', `<svg class="${iconClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2z"></path></svg>`, 'แผงควบคุม', 'ad-home');
+          if(!isMgr) addItem('ad-students', `<svg class="${iconClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>`, 'จัดการนักเรียน', 'ad-students');
+          addItem('ad-exams', `<svg class="${iconClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>`, 'จัดการวิชาสอบ', 'ad-exams');
+          addItem('ad-rooms', `<svg class="${iconClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>`, 'จัดห้องสอบ', 'ad-rooms');
+          if(!isMgr) addItem('ad-scores', `<svg class="${iconClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>`, 'บันทึกคะแนน', 'ad-scores');
+          addItem('ad-subj-scores', `<svg class="${iconClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 14l9-5-9-5-9 5 9 5z"></path><path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"></path></svg>`, 'คะแนนรายวิชา', 'ad-subj-scores');
+          addItem('ad-reports', `<svg class="${iconClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>`, 'รายงานผล', 'ad-reports');
+          if(!isMgr) addItem('ad-announce', `<svg class="${iconClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path></svg>`, 'แจ้งประกาศ', 'ad-announce');
+        }
+      }
+    }
+
+    function initView(id) {
+      if(id==='home') loadSdHome();
+      else if(id==='enroll') loadSdEnroll();
+      else if(id==='tickets') loadSdTickets();
+      else if(id==='results') loadSdResults();
+      else if(id==='profile') loadSdProfile();
+      else if(id==='ad-home') loadAdHome();
+      else if(id==='ad-students') loadAdStudents();
+      else if(id==='ad-exams') loadAdExams();
+      else if(id==='ad-rooms') loadAdRooms();
+      else if(id==='ad-scores') loadAdScoresMenu();
+      else if(id==='ad-subj-scores') loadAdSubjScoresMenu();
+      else if(id==='ad-announce') loadAdAnnounce();
+      else if(id==='ad-reports') loadAdReports();
+    }
+
+    // Force init roles in DB if not exist (fixes Manager/Executive login issue)
+    async function initRolesDB() {
+      const a = await db.get('admins');
+      if(!a || !a.posnpkw || !a.vicha || !a.admin) {
+        const ups = {};
+        if(!a || !a.admin) ups['admin'] = { password:'admin', name:'Super Admin', role:'admin' };
+        if(!a || !a.posnpkw) ups['posnpkw'] = { password:'posn1234pkw', name:'ผู้จัดการ', role:'manager' };
+        if(!a || !a.vicha) ups['vicha'] = { password:'vi1234', name:'ผู้บริหาร', role:'executive' };
+        if(Object.keys(ups).length) await db.patch('admins', ups);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      try { await initRolesDB(); } catch(e){}
+      checkSess();
+    });
+
+    function checkSess() {
+      const s = sessionStorage.getItem('posnSess');
+      if(s) { 
+        const p=JSON.parse(s); u=p.u; r=p.r;
+        let defTab = 'ad-home';
+        if(r === 'student') defTab = 'home';
+        
+        renderMenu(defTab); 
+        switchView(r==='student'?'sd-home':'ad-home');
+        initView(defTab); 
+      }
+      else { switchView('login'); }
+    }
+    
+    async function logout() {
+      if(await sConfirm('ออกจากระบบ', 'คุณต้องการออกจากระบบใช่หรือไม่?')) { sessionStorage.removeItem('posnSess'); u=null; r=null; checkSess(); }
+    }
+
+    function setLoginRole(role) {
+      document.getElementById('login-role').value = role;
+      document.getElementById('tab-student').className = `flex-1 py-2 text-sm font-bold rounded-lg transition-all ${role==='student'?'text-indigo-700 bg-white shadow-sm':'text-slate-500 hover:text-slate-700'}`;
+      document.getElementById('tab-admin').className = `flex-1 py-2 text-sm font-bold rounded-lg transition-all ${role==='admin'?'text-indigo-700 bg-white shadow-sm':'text-slate-500 hover:text-slate-700'}`;
+      document.getElementById('lbl-login-id').textContent = role==='student'?'รหัสนักเรียน (5 หลัก)':'ชื่อผู้ใช้งาน (Username)';
+      document.getElementById('login-id').placeholder = role==='student'?'12345':'username';
+      document.getElementById('reg-link-container').style.height = role==='student' ? '44px' : '0px';
+      document.getElementById('reg-link-container').style.opacity = role==='student' ? '1' : '0';
+      document.getElementById('login-id').value = '';
+      document.getElementById('login-pass').value = '';
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault(); showLoad(true);
+      const role = document.getElementById('login-role').value, id = document.getElementById('login-id').value.trim(), pass = document.getElementById('login-pass').value;
+      const data = await db.get(role==='admin' ? `admins/${id}` : `users/${id}`);
+      showLoad(false);
+      if(data && data.password===pass) {
+        if(role!=='admin') data.studentId = id;
+        sessionStorage.setItem('posnSess', JSON.stringify({u:data, r:role})); checkSess();
+      } else { sAlert('ผิดพลาด', 'ข้อมูลเข้าสู่ระบบไม่ถูกต้อง', 'error'); }
+    }
+
+    async function handleRegister(e) {
+      e.preventDefault(); showLoad(true);
+      const id = document.getElementById('reg-id').value;
+      const d = { password:document.getElementById('reg-pass').value, prefix:document.getElementById('reg-prefix').value, firstName:document.getElementById('reg-first').value, lastName:document.getElementById('reg-last').value, grade:document.getElementById('reg-grade').value, room:document.getElementById('reg-room').value, rollNumber:document.getElementById('reg-roll').value, phone:document.getElementById('reg-phone').value, role:'student' };
+      if(await db.get(`users/${id}`)) { showLoad(false); sAlert('ไม่สำเร็จ','รหัสนักเรียนนี้ถูกใช้ลงทะเบียนไปแล้ว!','error'); return; }
+      await db.put(`users/${id}`, d); showLoad(false);
+      sAlert('สำเร็จ','ลงทะเบียนเรียบร้อย กรุณาเข้าสู่ระบบ','success').then(()=>switchView('login'));
+    }
+
+    /* ---- STUDENT LOGIC ---- */
+    async function fetchSdData() {
+      const [ex, rg, an, rm] = await Promise.all([db.get('exams'), db.get('registrations'), db.get('announcement'), db.get('rooms')]);
+      const exams = ex ? Object.keys(ex).map(k=>({id:k,...ex[k]})) : [];
+      const regs = rg ? Object.keys(rg).map(k=>({id:k,...rg[k]})).filter(x=>x.studentId===u.studentId) : [];
+      const rooms = rm || {};
+      const allRegsList = rg ? Object.keys(rg).map(k=>({id:k,...rg[k]})) : [];
+      return { exams, regs, an, rooms, allRegsList };
+    }
+
+    async function loadSdHome() {
+      showLoad(true); const d = await fetchSdData(); showLoad(false);
+      document.getElementById('home-name').textContent = `${u.prefix||''} ${u.firstName} ${u.lastName}`;
+      document.getElementById('home-info').textContent = `ชั้น ${u.grade}/${u.room} เลขที่ ${u.rollNumber} | รหัส: ${u.studentId}`;
+      document.getElementById('home-announcement').textContent = d.an ? d.an.text : 'ไม่มีประกาศ';
+      
+      const today = new Date().toISOString().split('T')[0];
+      const up = d.regs.map(r=>{
+        const ex = d.exams.find(x=>x.id===r.examId);
+        return ex && ex.date >= today ? {...ex} : null;
+      }).filter(Boolean).sort((a,b)=>a.date.localeCompare(b.date));
+
+      let h = ''; up.forEach(e => {
+        h += `<div class="border border-slate-200 p-4 rounded-xl bg-white shadow-sm flex flex-col justify-center hover:-translate-y-1 transition-transform cursor-pointer" onclick="renderMenu('tickets'); switchView('sd-tickets'); initView('tickets');">
+          <strong class="text-indigo-900 text-lg">[${e.code||'-'}] ${e.name}</strong>
+          <span class="text-slate-500 text-sm mt-1 flex items-center gap-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg> ${formatThaiDate(e.date)} | ${e.startTime}-${e.endTime} น.</span>
+        </div>`;
+      });
+      document.getElementById('home-upcoming').innerHTML = h || '<div class="col-span-2 text-center text-slate-500 p-6 bg-slate-50 rounded-xl border border-slate-200">ไม่มีวิชาสอบที่กำลังจะมาถึง</div>';
+    }
+
+    async function loadSdEnroll() {
+      showLoad(true); const d = await fetchSdData(); showLoad(false);
+      const avail = d.exams.filter(ex=>ex.allowedGrades && ex.allowedGrades.includes(u.grade));
+      const myIds = d.regs.map(r=>r.examId);
+      const today = new Date().toISOString().split('T')[0];
+
+      let h = ''; avail.forEach(e => {
+        const isReg = myIds.includes(e.id);
+        const isOpen = today >= e.regOpenDate && today <= e.regCloseDate;
+        const isFull = e.capacity !== 999 && (e.enrolledCount||0) >= e.capacity;
+        
+        let btn = `<button onclick="regExam('${e.id}')" class="w-full mt-4 py-2.5 rounded-xl font-bold shadow-sm transition-all bg-indigo-600 text-white hover:bg-indigo-700">สมัครสอบวิชานี้</button>`;
+        if(isReg) {
+          if (isOpen) {
+            btn = `<button onclick="cancelReg('${e.id}')" class="w-full mt-4 py-2.5 rounded-xl font-bold shadow-sm transition-all bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200">❌ ยกเลิกการสมัคร</button>`;
+          } else {
+            btn = `<button disabled class="w-full mt-4 py-2.5 rounded-xl font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">✅ สมัครแล้ว</button>`;
+          }
+        }
+        else if(!isOpen) btn = `<button disabled class="w-full mt-4 py-2.5 rounded-xl font-bold bg-slate-100 text-slate-400">ไม่อยู่ในช่วงรับสมัคร</button>`;
+        else if(isFull) btn = `<button disabled class="w-full mt-4 py-2.5 rounded-xl font-bold bg-rose-50 text-rose-500 border border-rose-200">ที่นั่งเต็ม</button>`;
+
+        h += `<div class="glass-card p-6 border border-slate-200 flex flex-col justify-between hover:shadow-lg transition-all">
+          <div><div class="flex justify-between items-start mb-2"><strong class="text-xl text-indigo-900">[${e.code||'-'}] ${e.name}</strong><span class="bg-indigo-50 text-indigo-700 text-xs font-bold px-2 py-1 rounded">รับ ${e.capacity===999?'ไม่จำกัด':`${e.enrolledCount||0}/${e.capacity}`}</span></div>
+          <div class="text-slate-600 text-sm mb-1">📅 ${formatThaiDate(e.date)} | ⏱ ${e.startTime}-${e.endTime} น.</div>
+          <div class="text-xs font-bold text-amber-600 bg-amber-50 inline-block px-2 py-1 rounded mt-2">รับสมัคร: ${formatThaiDate(e.regOpenDate)} - ${formatThaiDate(e.regCloseDate)}</div></div>${btn}
+        </div>`;
+      });
+      document.getElementById('enroll-list').innerHTML = h || '<div class="col-span-2 text-center text-slate-500">ไม่มีวิชาที่เปิดรับสมัคร</div>';
+    }
+
+    async function regExam(id) {
+      if(!await sConfirm('ยืนยันสมัครสอบ','คุณต้องการสมัครสอบวิชานี้ใช่หรือไม่?')) return;
+      showLoad(true); const ex = await db.get(`exams/${id}`);
+      if(ex.capacity !== 999 && (ex.enrolledCount||0)>=ex.capacity) { showLoad(false); return sAlert('ไม่สำเร็จ','ที่นั่งเต็มแล้ว','error'); }
+      await db.put(`registrations/${u.studentId}_${id}`, { studentId:u.studentId, examId:id, timestamp:new Date().toISOString(), roomId:'', seatNumber:'', score:'', isAbsent:false });
+      await db.patch(`exams/${id}`, { enrolledCount:(ex.enrolledCount||0)+1 });
+      showLoad(false); sAlert('สำเร็จ','สมัครสอบเรียบร้อยแล้ว','success'); initView('enroll');
+    }
+
+    async function cancelReg(id) {
+      if(!await sConfirm('ยืนยันยกเลิก','คุณต้องการยกเลิกการสมัครสอบวิชานี้ใช่หรือไม่?')) return;
+      showLoad(true); const ex = await db.get(`exams/${id}`);
+      await db.del(`registrations/${u.studentId}_${id}`);
+      if(ex && ex.enrolledCount > 0) {
+        await db.patch(`exams/${id}`, { enrolledCount: (ex.enrolledCount||1) - 1 });
+      }
+      showLoad(false); sAlert('สำเร็จ','ยกเลิกการสมัครเรียบร้อยแล้ว','success'); initView('enroll');
+    }
+
+    async function loadSdTickets() {
+      showLoad(true); const d = await fetchSdData(); showLoad(false);
+      const validRegs = d.regs.filter(r=>d.exams.some(x=>x.id===r.examId));
+      let h = ''; validRegs.forEach(r => {
+        const ex = d.exams.find(x=>x.id===r.examId);
+        const rm = r.roomId && d.rooms[ex.id] ? d.rooms[ex.id][r.roomId] : null;
+        const rmName = rm ? rm.name : 'รอประกาศ';
+        const seat = r.seatNumber ? String(r.seatNumber).padStart(2,'0') : '-';
+        h += `<div class="bg-white border-2 border-slate-200 rounded-2xl p-6 relative overflow-hidden shadow-sm">
+          <div class="absolute top-0 right-0 bg-indigo-600 text-white font-black px-4 py-2 rounded-bl-2xl shadow-sm text-sm">${ex.code||'-'}</div>
+          <div class="mb-4 pt-4 border-b border-slate-100 pb-4">
+            <div class="text-slate-500 text-xs font-bold uppercase tracking-wider">ข้อมูลผู้สอบ</div>
+            <div class="font-bold text-lg text-slate-800">${u.studentId} | ${u.prefix||''}${u.firstName} ${u.lastName}</div>
+          </div>
+          <div class="mb-4">
+            <div class="text-slate-500 text-xs font-bold uppercase tracking-wider">รายวิชาสอบ</div>
+            <div class="font-bold text-lg text-indigo-700">${ex.name}</div>
+          </div>
+          <div class="grid grid-cols-2 gap-4 mb-4 text-sm">
+            <div><span class="block text-slate-500 text-xs font-bold">วันที่สอบ</span><span class="font-bold text-slate-700">${formatThaiDate(ex.date)}</span></div>
+            <div><span class="block text-slate-500 text-xs font-bold">เวลาสอบ</span><span class="font-bold text-slate-700">${ex.startTime}-${ex.endTime} น.</span></div>
+          </div>
+          <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-4 flex justify-between items-center">
+            <div><span class="block text-indigo-400 text-xs font-bold uppercase tracking-widest">ห้องสอบ</span><span class="font-black text-indigo-900 text-xl">${rmName}</span></div>
+            <div class="text-right"><span class="block text-rose-400 text-xs font-bold uppercase tracking-widest">ลำดับที่นั่ง</span><span class="font-black text-rose-600 text-4xl leading-none">${seat}</span></div>
+          </div>
+        </div>`;
+      });
+      document.getElementById('tickets-list').innerHTML = h || '<div class="col-span-2 text-center text-slate-500">ไม่มีข้อมูลบัตรเข้าสอบ</div>';
+    }
+
+    // STATS FUNCTIONS
+    function getExamStats(examId, allRegs) {
+      const scores = allRegs.filter(r=>r.examId===examId && r.score && r.score.trim() !== '' && !r.isAbsent).map(r=>parseFloat(r.score)).sort((a,b)=>a-b);
+      if(!scores.length) return null;
+      const sum = scores.reduce((a,b)=>a+b, 0);
+      const mean = sum / scores.length;
+      const variance = scores.reduce((a,b)=>a + Math.pow(b-mean, 2), 0) / scores.length;
+      const sd = Math.sqrt(variance) || 1; // avoid /0
+      return { mean, sd, scores };
+    }
+    function getPercentileRank(score, sortedScores) {
+      const count = sortedScores.filter(s => s <= score).length;
+      return ((count / sortedScores.length) * 100).toFixed(2);
+    }
+    function getTScore(score, mean, sd) {
+      return (50 + 10 * ((score - mean) / sd)).toFixed(2);
+    }
+    function getMedal(pr) {
+      const p = parseFloat(pr);
+      if(p >= 95) return { name: 'เหรียญทอง', color: 'text-amber-500', bg: 'bg-amber-50' };
+      if(p >= 85) return { name: 'เหรียญเงิน', color: 'text-slate-500', bg: 'bg-slate-100' };
+      if(p >= 70) return { name: 'เหรียญทองแดง', color: 'text-orange-700', bg: 'bg-orange-50' };
+      return null;
+    }
+
+    async function loadSdResults() {
+      showLoad(true); const d = await fetchSdData(); showLoad(false);
+      const validRegs = d.regs.filter(r=>d.exams.some(x=>x.id===r.examId));
+      let h = ''; validRegs.forEach(r => {
+        const ex = d.exams.find(x=>x.id===r.examId);
+        const st = getExamStats(ex.id, d.allRegsList);
+        
+        if(r.isAbsent) {
+          h += `<tr><td class="p-4 border-b border-slate-100"><strong class="text-slate-800">[${ex.code||'-'}] ${ex.name}</strong></td><td colspan="5" class="p-4 border-b border-slate-100 text-center"><span class="text-rose-500 font-bold bg-rose-50 px-3 py-1.5 rounded-lg border border-rose-200">ขาดสอบ</span></td></tr>`;
+        } else if (!r.score) {
+          h += `<tr><td class="p-4 border-b border-slate-100"><strong class="text-slate-800">[${ex.code||'-'}] ${ex.name}</strong></td><td colspan="5" class="p-4 border-b border-slate-100 text-center"><span class="text-amber-500 font-bold bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200">รอประกาศผล</span></td></tr>`;
+        } else if (st) {
+          const sc = parseFloat(r.score);
+          const ts = getTScore(sc, st.mean, st.sd);
+          const pr = getPercentileRank(sc, st.scores);
+          const md = getMedal(pr);
+          const mdBadge = md ? `<span class="${md.color} ${md.bg} px-2 py-1 rounded text-xs font-bold border border-current whitespace-nowrap">🥇 ${md.name}</span>` : '<span class="text-slate-400 text-xs">-</span>';
+          
+          h += `<tr class="hover:bg-slate-50">
+            <td class="p-4 border-b border-slate-100"><strong class="text-slate-800">[${ex.code||'-'}] ${ex.name}</strong></td>
+            <td class="p-4 border-b border-slate-100 text-center font-black text-lg text-emerald-600">${sc}</td>
+            <td class="p-4 border-b border-slate-100 text-center font-bold text-slate-600">${ts}</td>
+            <td class="p-4 border-b border-slate-100 text-center font-bold text-slate-600">PR ${pr}</td>
+            <td class="p-4 border-b border-slate-100 text-center">${mdBadge}</td>
+            <td class="p-4 border-b border-slate-100 text-center">
+              <div class="flex items-center justify-center gap-2">
+                <button onclick="showScorePopup('${ex.name}', ${sc}, ${ts}, ${pr}, '${md?md.name:''}')" class="bg-indigo-100 text-indigo-700 p-2 rounded-lg hover:bg-indigo-200 transition-colors" title="ดูรายละเอียดคะแนน"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg></button>
+                ${md ? `<button onclick="downloadCert('${ex.name}', '${md.name}')" class="bg-amber-100 text-amber-700 p-2 rounded-lg hover:bg-amber-200 transition-colors font-bold text-sm flex items-center gap-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path></svg> เกียรติบัตร</button>` : ''}
+              </div>
+            </td>
+          </tr>`;
+        }
+      });
+      document.getElementById('results-list').innerHTML = h || '<tr><td colspan="6" class="p-8 text-center text-slate-500">ไม่มีข้อมูลผลการสอบ</td></tr>';
+    }
+
+    function showScorePopup(name, sc, ts, pr, md) {
+      let html = `
+        <div class="text-left mt-4">
+          <div class="bg-indigo-50 border border-indigo-100 p-4 rounded-xl mb-4 text-center">
+            <div class="text-slate-500 text-sm font-bold uppercase tracking-widest mb-1">คะแนนดิบ</div>
+            <div class="text-5xl font-black text-indigo-700">${sc}</div>
+          </div>
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div class="bg-slate-50 border border-slate-200 p-3 rounded-xl text-center"><div class="text-slate-500 text-xs font-bold uppercase mb-1">T-Score</div><div class="text-xl font-bold text-slate-700">${ts}</div></div>
+            <div class="bg-slate-50 border border-slate-200 p-3 rounded-xl text-center"><div class="text-slate-500 text-xs font-bold uppercase mb-1">Percentile</div><div class="text-xl font-bold text-slate-700">PR ${pr}</div></div>
+          </div>
+          ${md ? `<div class="bg-amber-50 border border-amber-200 p-3 rounded-xl text-center"><div class="text-amber-600 text-xs font-bold uppercase mb-1">ระดับรางวัลเกียรติบัตร</div><div class="text-2xl font-black text-amber-500">🥇 ${md}</div></div>` : ''}
+        </div>
+      `;
+      Swal.fire({ title: name, html: html, confirmButtonText: 'ปิด', confirmButtonColor: '#4f46e5', width: 400 });
+    }
+
+    function downloadCert(exName, mdName) {
+      // Future feature structure
+      sAlert('ฟีเจอร์ดาวน์โหลดเกียรติบัตร', `ดาวน์โหลดเกียรติบัตร ${mdName} สำหรับวิชา ${exName} (จะพร้อมใช้งานเร็วๆ นี้)`, 'info');
+    }
+
+    // Profile Edit
+    function loadSdProfile() {
+      document.getElementById('ep-id').value = u.studentId;
+      document.getElementById('ep-pass').value = '';
+      document.getElementById('ep-prefix').value = u.prefix || 'เด็กชาย';
+      document.getElementById('ep-first').value = u.firstName;
+      document.getElementById('ep-last').value = u.lastName;
+      document.getElementById('ep-grade').value = u.grade;
+      document.getElementById('ep-room').value = u.room;
+      document.getElementById('ep-roll').value = u.rollNumber;
+      document.getElementById('ep-phone').value = u.phone;
+    }
+    
+    async function handleEditProfile(e) {
+      e.preventDefault();
+      const pass = document.getElementById('ep-pass').value;
+      const d = {
+        prefix: document.getElementById('ep-prefix').value,
+        firstName: document.getElementById('ep-first').value,
+        lastName: document.getElementById('ep-last').value,
+        grade: document.getElementById('ep-grade').value,
+        room: document.getElementById('ep-room').value,
+        rollNumber: document.getElementById('ep-roll').value,
+        phone: document.getElementById('ep-phone').value,
+      };
+      if(pass) d.password = pass;
+      
+      showLoad(true); await db.patch(`users/${u.studentId}`, d); 
+      u = {...u, ...d}; sessionStorage.setItem('posnSess', JSON.stringify({u,r}));
+      showLoad(false); sAlert('สำเร็จ','อัปเดตข้อมูลส่วนตัวเรียบร้อยแล้ว','success');
+    }
+
+    /* ---- ADMIN LOGIC ---- */
+    async function loadAdHome() {
+      if(u.role==='executive') return switchView('ad-reports');
+      document.getElementById('ad-welcome-title').textContent = u.role==='manager' ? 'ยินดีต้อนรับ ผู้จัดการ' : 'ยินดีต้อนรับ ผู้ดูแลระบบ';
+      showLoad(true); const [uO, eO, rO] = await Promise.all([db.get('users'), db.get('exams'), db.get('registrations')]); showLoad(false);
+      const st = Object.keys(uO||{}).filter(k=>uO[k].role==='student').length; const ex = Object.keys(eO||{}).length; const rg = Object.keys(rO||{}).length;
+      document.getElementById('ad-stats').innerHTML = `
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200"><div class="text-slate-500 font-bold text-sm">นักเรียนในระบบ</div><div class="text-4xl font-black text-indigo-600 mt-2">${st}</div></div>
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200"><div class="text-slate-500 font-bold text-sm">วิชาสอบที่เปิด</div><div class="text-4xl font-black text-blue-600 mt-2">${ex}</div></div>
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200"><div class="text-slate-500 font-bold text-sm">ยอดการสมัครทั้งหมด</div><div class="text-4xl font-black text-emerald-600 mt-2">${rg}</div></div>
+      `;
+    }
+    
+    // Reports
+    async function loadAdReports() {
+      showLoad(true); const [uO, eO, rO] = await Promise.all([db.get('users'), db.get('exams'), db.get('registrations')]); showLoad(false);
+      
+      const st = Object.keys(uO||{}).filter(k=>uO[k].role==='student').length;
+      const ex = Object.keys(eO||{}).length;
+      const regsList = Object.keys(rO||{}).map(k=>rO[k]);
+      
+      document.getElementById('rp-total-students').textContent = st;
+      document.getElementById('rp-total-exams').textContent = ex;
+      document.getElementById('rp-total-regs').textContent = regsList.length;
+      
+      const exams = Object.keys(eO||{}).map(k=>({id:k,...eO[k]}));
+      const labels = []; const data = [];
+      let scoreHtml = '';
+      
+      exams.sort((a,b)=>a.date.localeCompare(b.date)).forEach(e => {
+        labels.push(`[${e.code||'-'}]`);
+        const eRegs = regsList.filter(x=>x.examId===e.id);
+        data.push(eRegs.length);
+        
+        const scores = eRegs.map(x=>parseFloat(x.score)).filter(x=>!isNaN(x));
+        if(scores.length > 0) {
+          const max = Math.max(...scores);
+          const min = Math.min(...scores);
+          const avg = (scores.reduce((a,b)=>a+b, 0) / scores.length).toFixed(2);
+          scoreHtml += `<tr><td class="p-3 border-b border-slate-100 text-slate-700">[${e.code||'-'}] ${e.name}</td><td class="p-3 text-center text-emerald-600 font-bold border-b border-slate-100">${max}</td><td class="p-3 text-center text-rose-600 font-bold border-b border-slate-100">${min}</td><td class="p-3 text-center text-indigo-600 font-bold border-b border-slate-100">${avg}</td></tr>`;
+        }
+      });
+      
+      document.getElementById('rp-scores-body').innerHTML = scoreHtml || '<tr><td colspan="4" class="p-4 text-center text-slate-500">ยังไม่มีข้อมูลการบันทึกคะแนน</td></tr>';
+
+      const ctx = document.getElementById('reportChart').getContext('2d');
+      if(window.rpChart) window.rpChart.destroy();
+      window.rpChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{ label: 'ยอดผู้สมัคร (คน)', data: data, backgroundColor: '#4f46e5', borderRadius: 6 }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+      });
+    }
+
+    // Students
+    async function loadAdStudents() {
+      showLoad(true); const uO = await db.get('users'); showLoad(false);
+      allStudents = uO ? Object.keys(uO).map(k=>({id:k,...uO[k]})).filter(x=>x.role==='student') : [];
+      filterStudents();
+    }
+    function filterStudents() {
+      const q = document.getElementById('ad-search-student').value.toLowerCase();
+      const s = allStudents.filter(x => x.id.includes(q) || (x.firstName+' '+x.lastName).toLowerCase().includes(q));
+      document.getElementById('ad-students-list').innerHTML = s.map(x=>`<tr><td class="p-3 font-bold text-indigo-700 border-b border-slate-100">${x.id}</td><td class="p-3 border-b border-slate-100">${x.prefix||''}${x.firstName} ${x.lastName}</td><td class="p-3 border-b border-slate-100">ชั้น ${x.grade}/${x.room} <span class="bg-slate-100 px-1 rounded text-xs ml-1 font-bold text-slate-500">เลขที่ ${x.rollNumber}</span></td><td class="p-3 border-b border-slate-100 text-right"><button onclick="editStudent('${x.id}')" class="text-xs bg-slate-100 text-slate-700 font-bold px-2 py-1 rounded hover:bg-slate-200 mr-1">แก้ไข</button><button onclick="delStudent('${x.id}')" class="text-xs bg-rose-100 text-rose-700 font-bold px-2 py-1 rounded hover:bg-rose-200">ลบ</button></td></tr>`).join('') || '<tr><td colspan="4" class="p-8 text-center text-slate-500">ไม่พบข้อมูลนักเรียน</td></tr>';
+    }
+    function openStudentModal() {
+      document.getElementById('ms-is-edit').value = 'false'; document.getElementById('ms-old-id').value=''; document.getElementById('ms-id').value='';
+      ['pass','prefix','phone','first','last','grade','room','roll'].forEach(k=>document.getElementById(`ms-${k}`).value='');
+      document.getElementById('ms-warn-edit').classList.add('hidden');
+      document.getElementById('modal-student-title').textContent = 'เพิ่มนักเรียนใหม่'; document.getElementById('modal-student').classList.remove('app-hidden');
+    }
+    function editStudent(id) {
+      const st = allStudents.find(x=>x.id===id); if(!st) return;
+      document.getElementById('ms-is-edit').value = 'true'; document.getElementById('ms-old-id').value=st.id; document.getElementById('ms-id').value=st.id; 
+      document.getElementById('ms-pass').value=st.password; document.getElementById('ms-prefix').value=st.prefix||''; document.getElementById('ms-phone').value=st.phone; document.getElementById('ms-first').value=st.firstName; document.getElementById('ms-last').value=st.lastName; document.getElementById('ms-grade').value=st.grade; document.getElementById('ms-room').value=st.room; document.getElementById('ms-roll').value=st.rollNumber;
+      
+      document.getElementById('ms-warn-edit').classList.remove('hidden');
+      document.getElementById('modal-student-title').textContent = 'แก้ไขข้อมูลนักเรียน'; document.getElementById('modal-student').classList.remove('app-hidden');
+    }
+    async function saveStudent(e) {
+      e.preventDefault(); const id = document.getElementById('ms-id').value; const oldId = document.getElementById('ms-old-id').value; const isEdit = document.getElementById('ms-is-edit').value === 'true';
+      if(!isEdit && await db.get(`users/${id}`)) return sAlert('ไม่สำเร็จ','รหัสนักเรียนนี้มีในระบบแล้ว','error');
+      
+      showLoad(true);
+      const d = { password:document.getElementById('ms-pass').value, prefix:document.getElementById('ms-prefix').value, firstName:document.getElementById('ms-first').value, lastName:document.getElementById('ms-last').value, grade:document.getElementById('ms-grade').value, room:document.getElementById('ms-room').value, rollNumber:document.getElementById('ms-roll').value, phone:document.getElementById('ms-phone').value, role:'student', studentId:id };
+      
+      if(isEdit && oldId !== id) {
+        if(await db.get(`users/${id}`)) { showLoad(false); return sAlert('ไม่สำเร็จ','รหัสใหม่มีในระบบอยู่แล้ว','error'); }
+        await db.put(`users/${id}`, d);
+        await db.del(`users/${oldId}`);
+        const rg = await db.get('registrations');
+        if(rg) {
+          const ups = {};
+          Object.keys(rg).filter(k=>rg[k].studentId===oldId).forEach(k=>{
+            const rData = rg[k]; rData.studentId = id;
+            ups[`${id}_${rData.examId}`] = rData;
+            ups[k] = null;
+          });
+          if(Object.keys(ups).length) await db.patch('registrations', ups);
+        }
+      } else {
+        await db.put(`users/${id}`, d);
+      }
+      
+      closeModal('modal-student'); await loadAdStudents(); showLoad(false); sAlert('สำเร็จ','บันทึกข้อมูลเรียบร้อย','success');
+    }
+    async function delStudent(id) {
+      if(!await sConfirm('ลบข้อมูล','ยืนยันการลบข้อมูลนักเรียนรหัส '+id+' หรือไม่?')) return;
+      showLoad(true); await db.del(`users/${id}`); await loadAdStudents(); showLoad(false);
+    }
+
+    // Exams
+    async function loadAdExams() {
+      showLoad(true); const eO = await db.get('exams'); showLoad(false);
+      allExams = eO ? Object.keys(eO).map(k=>({id:k,...eO[k]})) : [];
+      let h = ''; allExams.forEach(e => {
+        h += `<tr class="hover:bg-slate-50">
+          <td class="p-4 border-b border-slate-100"><strong class="text-slate-800">[${e.code||'-'}] ${e.name}</strong><br><span class="text-slate-500 text-xs">รับชั้น: ${(e.allowedGrades||[]).join(',')}</span></td>
+          <td class="p-4 border-b border-slate-100 text-sm">สอบ: ${formatThaiDate(e.date)}<br><span class="text-slate-400">รับ: ${formatThaiDate(e.regOpenDate)} - ${formatThaiDate(e.regCloseDate)}</span></td>
+          <td class="p-4 border-b border-slate-100 text-center font-black ${((e.enrolledCount||0)>=e.capacity && e.capacity!==999)?'text-rose-600':'text-emerald-600'}">${e.enrolledCount||0} <span class="text-slate-400 text-sm font-bold">/ ${e.capacity===999?'∞':e.capacity}</span></td>
+          <td class="p-4 border-b border-slate-100 text-right space-y-1">
+            <button onclick="exportList('${e.id}')" class="text-xs bg-emerald-100 text-emerald-700 font-bold px-2 py-1 rounded hover:bg-emerald-200 shadow-sm">รายชื่อ</button>
+            <button onclick="editExam('${e.id}')" class="text-xs bg-slate-100 text-slate-700 font-bold px-2 py-1 rounded hover:bg-slate-200 shadow-sm">แก้ไข</button>
+            <button onclick="delExam('${e.id}')" class="text-xs bg-rose-100 text-rose-700 font-bold px-2 py-1 rounded hover:bg-rose-200 shadow-sm">ลบ</button>
+          </td>
+        </tr>`;
+      });
+      document.getElementById('ad-exams-list').innerHTML = h || '<tr><td colspan="4" class="p-8 text-center text-slate-500">ไม่มีข้อมูลวิชาสอบ</td></tr>';
+    }
+
+    async function exportList(examId) {
+      showLoad(true);
+      const [ex, rgO, uO] = await Promise.all([db.get(`exams/${examId}`), db.get('registrations'), db.get('users')]);
+      showLoad(false);
+      const regs = Object.keys(rgO||{}).filter(k=>rgO[k].examId===examId).map(k=>rgO[k]);
+      if(!regs.length) return sAlert('ไม่มีข้อมูล', 'ยังไม่มีผู้สมัครในวิชานี้', 'warning');
+      
+      const data = regs.map((r, idx) => {
+        const st = uO[r.studentId] || {};
+        return {
+          'ลำดับ': idx + 1,
+          'รหัสนักเรียน': r.studentId,
+          'ชื่อ - นามสกุล': `${st.prefix||''}${st.firstName||''} ${st.lastName||''}`,
+          'ชั้น': st.grade || '',
+          'ห้อง': st.room || '',
+          'เลขที่': st.rollNumber || '',
+          'เบอร์โทรศัพท์': st.phone || ''
+        };
+      });
+
+      const swalRes = await Swal.fire({
+        title: 'เลือกรูปแบบไฟล์ดาวน์โหลด',
+        text: `รายชื่อผู้สมัครวิชา [${ex.code||'-'}] ${ex.name}`,
+        icon: 'question',
+        showDenyButton: true,
+        showCancelButton: true,
+        confirmButtonText: 'Excel (.xlsx)',
+        denyButtonText: 'PDF (พิมพ์)',
+        cancelButtonText: 'ยกเลิก',
+        confirmButtonColor: '#10b981',
+        denyButtonColor: '#ef4444'
+      });
+
+      if (swalRes.isConfirmed) {
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "รายชื่อผู้สมัคร");
+        XLSX.writeFile(wb, `รายชื่อ_${ex.name}.xlsx`);
+      } else if (swalRes.isDenied) {
+        let html = `<div class="page-break w-full max-w-[210mm] mx-auto text-black p-4">
+          <div class="text-center mb-6">
+            <h2 class="text-2xl font-bold mb-1">รายชื่อผู้สมัครสอบ</h2>
+            <h3 class="text-xl mb-1">[${ex.code||'-'}] ${ex.name}</h3>
+            <p class="text-sm text-slate-500">พิมพ์เมื่อ: ${formatThaiDate(new Date().toISOString())}</p>
+          </div>
+          <table class="w-full border border-slate-300 text-sm text-left">
+            <thead class="bg-slate-100">
+              <tr class="border-b border-slate-300">
+                <th class="p-2 border-r border-slate-300 text-center">ลำดับ</th>
+                <th class="p-2 border-r border-slate-300 text-center">รหัสนักเรียน</th>
+                <th class="p-2 border-r border-slate-300">ชื่อ - นามสกุล</th>
+                <th class="p-2 border-r border-slate-300 text-center">ชั้น/ห้อง</th>
+                <th class="p-2 border-r border-slate-300 text-center">เลขที่</th>
+                <th class="p-2 text-center">เบอร์โทรศัพท์</th>
+              </tr>
+            </thead>
+            <tbody>`;
+        data.forEach(r => {
+          html += `<tr class="border-b border-slate-300">
+            <td class="p-2 text-center border-r border-slate-300">${r['ลำดับ']}</td>
+            <td class="p-2 text-center border-r border-slate-300">${r['รหัสนักเรียน']}</td>
+            <td class="p-2 border-r border-slate-300">${r['ชื่อ - นามสกุล']}</td>
+            <td class="p-2 text-center border-r border-slate-300">${r['ชั้น']}/${r['ห้อง']}</td>
+            <td class="p-2 text-center border-r border-slate-300">${r['เลขที่']}</td>
+            <td class="p-2 text-center">${r['เบอร์โทรศัพท์']}</td>
+          </tr>`;
+        });
+        html += `</tbody></table></div>`;
+        document.getElementById('print-container').innerHTML = html;
+        window.print();
+      }
+    }
+
+    function renderGrades() {
+      const gs = ['ม.1','ม.2','ม.3','ม.4','ม.5','ม.6'];
+      document.getElementById('ex-grade-container').innerHTML = gs.map(g=>`<label class="inline-flex items-center gap-2 cursor-pointer bg-white px-3 py-1.5 rounded-lg border border-slate-200"><input type="checkbox" value="${g}" class="ex-grade w-4 h-4 text-indigo-600"> <span class="font-bold text-slate-700 text-sm">${g}</span></label>`).join('');
+    }
+
+    function openExamModal() {
+      renderGrades(); document.getElementById('ex-id').value=''; document.getElementById('ex-code').value=''; document.getElementById('ex-name').value=''; document.getElementById('ex-date').value=''; document.getElementById('ex-cap').value=''; document.getElementById('ex-start').value=''; document.getElementById('ex-end').value=''; document.getElementById('ex-reg-open').value=''; document.getElementById('ex-reg-close').value='';
+      document.getElementById('modal-exam-title').textContent = 'เพิ่มวิชาสอบ'; document.getElementById('modal-exam').classList.remove('app-hidden');
+    }
+
+    function editExam(id) {
+      const e = allExams.find(x=>x.id===id); if(!e) return; renderGrades();
+      document.getElementById('ex-id').value=e.id; document.getElementById('ex-code').value=e.code||''; document.getElementById('ex-name').value=e.name; document.getElementById('ex-date').value=e.date; document.getElementById('ex-cap').value=e.capacity; document.getElementById('ex-start').value=e.startTime; document.getElementById('ex-end').value=e.endTime; document.getElementById('ex-reg-open').value=e.regOpenDate; document.getElementById('ex-reg-close').value=e.regCloseDate;
+      document.querySelectorAll('.ex-grade').forEach(cb=>cb.checked=(e.allowedGrades||[]).includes(cb.value));
+      document.getElementById('modal-exam-title').textContent = 'แก้ไขวิชาสอบ'; document.getElementById('modal-exam').classList.remove('app-hidden');
+    }
+
+    async function saveExam(e) {
+      e.preventDefault(); const gs = Array.from(document.querySelectorAll('.ex-grade:checked')).map(cb=>cb.value);
+      if(!gs.length) return sAlert('ข้อผิดพลาด','กรุณาเลือกระดับชั้นอย่างน้อย 1 ระดับ','error');
+      const id = document.getElementById('ex-id').value;
+      const d = { code:document.getElementById('ex-code').value, name:document.getElementById('ex-name').value, date:document.getElementById('ex-date').value, capacity:parseInt(document.getElementById('ex-cap').value), startTime:document.getElementById('ex-start').value, endTime:document.getElementById('ex-end').value, regOpenDate:document.getElementById('ex-reg-open').value, regCloseDate:document.getElementById('ex-reg-close').value, allowedGrades:gs };
+      showLoad(true); if(id) await db.patch(`exams/${id}`,d); else { d.enrolledCount=0; await db.put(`exams/ex_${Date.now()}`,d); }
+      closeModal('modal-exam'); loadAdExams();
+    }
+
+    async function delExam(id) {
+      if(!await sConfirm('ลบวิชาสอบ','ลบถาวร รวมถึงข้อมูลการสมัครของวิชานี้ทั้งหมด?')) return;
+      showLoad(true); await db.del(`exams/${id}`);
+      const rO = await db.get('registrations'); if(rO) { const ups={}; Object.keys(rO).filter(k=>rO[k].examId===id).forEach(k=>ups[k]=null); await db.patch('registrations',ups); }
+      await db.del(`rooms/${id}`); loadAdExams();
+    }
+
+    // Rooms & Seating
+    async function loadAdRooms() {
+      showLoad(true); const [eO, rO] = await Promise.all([db.get('exams'), db.get('registrations')]); showLoad(false);
+      allExams = eO ? Object.keys(eO).map(k=>({id:k,...eO[k]})) : [];
+      let h = '';
+      allExams.sort((a,b)=>a.date.localeCompare(b.date)).forEach(e => {
+        const enrol = e.enrolledCount||0;
+        const eRegs = Object.keys(rO||{}).filter(k=>rO[k].examId===e.id).map(k=>rO[k]);
+        const unassigned = eRegs.filter(x=>!x.roomId || !x.seatNumber).length;
+        h += `<tr class="hover:bg-slate-50">
+          <td class="p-4 border-b border-slate-100"><strong class="text-slate-800">[${e.code||'-'}] ${e.name}</strong></td>
+          <td class="p-4 border-b border-slate-100 text-sm font-medium text-slate-700">${formatThaiDate(e.date)}</td>
+          <td class="p-4 border-b border-slate-100 text-center font-black text-indigo-700">${enrol}</td>
+          <td class="p-4 border-b border-slate-100 text-center font-black ${unassigned>0?'text-rose-600':'text-emerald-600'}">${unassigned}</td>
+          <td class="p-4 border-b border-slate-100 text-right"><button onclick="openManageRooms('${e.id}')" class="bg-indigo-600 text-white font-bold px-4 py-2 rounded-lg shadow-sm hover:bg-indigo-700 transition-colors">จัดการห้องสอบ</button></td>
+        </tr>`;
+      });
+      document.getElementById('ad-rooms-list').innerHTML = h || '<tr><td colspan="5" class="p-8 text-center text-slate-500">ไม่มีข้อมูลวิชาสอบ</td></tr>';
+    }
+
+    async function openManageRooms(id) {
+      currentExamId = id; const e = allExams.find(x=>x.id===id); document.getElementById('room-exam-name').textContent = `วิชา: [${e.code||'-'}] ${e.name}`;
+      document.getElementById('rm-add-name').value=''; document.getElementById('rm-add-cap').value='';
+      showLoad(true); await loadRoomData(); showLoad(false); document.getElementById('modal-rooms').classList.remove('app-hidden');
+    }
+
+    async function loadRoomData() {
+      const [rmO, rgO] = await Promise.all([db.get(`rooms/${currentExamId}`), db.get('registrations')]);
+      roomsCache = rmO ? Object.keys(rmO).map(k=>({id:k,...rmO[k]})) : [];
+      regsCache = Object.keys(rgO||{}).filter(k=>rgO[k].examId===currentExamId).map(k=>({regId:k,...rgO[k]}));
+      
+      const totalEnrolled = regsCache.length;
+      const totalCap = roomsCache.reduce((sum, r)=>sum+(parseInt(r.capacity)||0), 0);
+      const unassigned = regsCache.filter(x=>!x.roomId || !x.seatNumber).length;
+      
+      document.getElementById('rm-total-enrolled').textContent = totalEnrolled;
+      document.getElementById('rm-total-cap').textContent = totalCap;
+      document.getElementById('rm-unassigned').textContent = unassigned;
+
+      let h = ''; roomsCache.forEach(r => {
+        const assigned = regsCache.filter(x=>x.roomId===r.id).length;
+        h += `<tr><td class="p-4 font-bold text-slate-700 border-b border-slate-100">${r.name}</td><td class="p-4 text-center font-bold border-b border-slate-100">${r.capacity}</td><td class="p-4 text-center font-bold text-indigo-600 border-b border-slate-100">${assigned}</td><td class="p-4 text-right border-b border-slate-100"><button onclick="delRoom('${r.id}')" class="text-rose-500 hover:text-rose-700 font-bold bg-rose-50 px-2 py-1 rounded">ลบ</button></td></tr>`;
+      });
+      document.getElementById('rooms-list').innerHTML = h || '<tr><td colspan="4" class="p-8 text-center text-slate-500">ยังไม่มีห้องสอบ</td></tr>';
+    }
+
+    async function addRoom(e) {
+      e.preventDefault(); const n = document.getElementById('rm-add-name').value, c = parseInt(document.getElementById('rm-add-cap').value);
+      showLoad(true); await db.put(`rooms/${currentExamId}/rm_${Date.now()}`,{name:n, capacity:c});
+      document.getElementById('rm-add-name').value=''; document.getElementById('rm-add-cap').value=''; await loadRoomData(); showLoad(false);
+    }
+    
+    async function delRoom(id) {
+      if(!await sConfirm('ลบห้อง','ยืนยันลบห้องสอบนี้? ถ้านักเรียนถูกจัดที่นั่งไว้แล้ว นักเรียนจะสูญเสียที่นั่งนั้น')) return;
+      showLoad(true); await db.del(`rooms/${currentExamId}/${id}`);
+      const ups={}; regsCache.filter(x=>x.roomId===id).forEach(x=>{ups[`${x.regId}/roomId`] = ''; ups[`${x.regId}/seatNumber`] = '';});
+      if(Object.keys(ups).length) await db.patch('registrations', ups);
+      await loadRoomData(); showLoad(false);
+    }
+
+    async function autoAssignSeats() {
+      if(!roomsCache.length) return sAlert('ผิดพลาด','กรุณาสร้างห้องสอบให้เพียงพอก่อนจัดที่นั่ง','error');
+      if(!await sConfirm('จัดที่นั่งอัตโนมัติ','ระบบจะเรียงชื่อ ก-ฮ และจัดลงห้องสอบตามลำดับ (เลขที่นั่งจะนับ 1 ใหม่ทุกห้อง) ข้อมูลที่นั่งเดิมของวิชานี้จะถูกทับทั้งหมด ยืนยันหรือไม่?')) return;
+      
+      showLoad(true);
+      const uO = await db.get('users');
+      let rc = regsCache.map(r=>({...r, ...(uO[r.studentId]||{})}));
+      rc.sort((a,b)=>(a.firstName||'').localeCompare(b.firstName||'','th-TH'));
+      
+      let rmIdx = 0, seatNum = 1, ups = {}, totalAssigned = 0;
+      for(const r of rc) {
+        if(rmIdx >= roomsCache.length) break; 
+        ups[`${r.regId}/roomId`] = roomsCache[rmIdx].id;
+        ups[`${r.regId}/seatNumber`] = seatNum;
+        seatNum++; totalAssigned++;
+        if(seatNum > roomsCache[rmIdx].capacity) { rmIdx++; seatNum = 1; }
+      }
+      if(Object.keys(ups).length) await db.patch('registrations', ups);
+      await loadRoomData(); showLoad(false);
+      
+      if(totalAssigned < rc.length) sAlert('จัดที่นั่งไม่ครบ',`จัดได้ ${totalAssigned} คน จากทั้งหมด ${rc.length} คน (ห้องสอบไม่เพียงพอ)`,'warning');
+      else sAlert('สำเร็จ',`จัดที่นั่งเรียบร้อย ${totalAssigned} คน`,'success');
+    }
+
+    async function printRoster(id) {
+      showLoad(true); const [rO, uO, rmO] = await Promise.all([db.get('registrations'), db.get('users'), db.get(`rooms/${id}`)]); showLoad(false);
+      const rooms = rmO ? Object.keys(rmO).map(k=>({id:k,...rmO[k]})) : [];
+      let regs = Object.keys(rO||{}).filter(k=>rO[k].examId===id).map(k=>({regId:k,...rO[k],...(uO[rO[k].studentId]||{})}));
+      const ex = allExams.find(x=>x.id===id);
+      
+      let html = '';
+      if(!rooms.length) return sAlert('พิมพ์ไม่ได้','วิชานี้ยังไม่มีการสร้างห้องสอบ','error');
+
+      rooms.forEach(rm => {
+        const rmRegs = regs.filter(x=>x.roomId===rm.id).sort((a,b)=>parseInt(a.seatNumber||0)-parseInt(b.seatNumber||0));
+        if(!rmRegs.length) return;
+        
+        let trs = ''; rmRegs.forEach(r => { trs += `<tr class="border-b border-slate-300"><td class="p-2 text-center border-r border-slate-300">${r.seatNumber||'-'}</td><td class="p-2 text-center border-r border-slate-300">${r.studentId}</td><td class="p-2 border-r border-slate-300">${r.prefix||''}${r.firstName} ${r.lastName}</td><td class="p-2 border-r border-slate-300">ชั้น ${r.grade}/${r.room}</td><td class="p-2 border-slate-300"></td></tr>`; });
+
+        html += `
+        <div class="page-break w-full max-w-[210mm] mx-auto text-black p-4">
+          <div class="text-center mb-6">
+            <h2 class="text-2xl font-bold mb-1">ใบลงรายชื่อผู้เข้าสอบ</h2>
+            <h3 class="text-xl mb-1">[${ex.code||'-'}] ${ex.name}</h3>
+            <p class="text-sm">วันที่สอบ: ${formatThaiDate(ex.date)} เวลา: ${ex.startTime} - ${ex.endTime} น.</p>
+            <p class="text-lg font-bold mt-2">ห้องสอบ: ${rm.name}</p>
+          </div>
+          <table class="w-full border border-slate-300 text-sm">
+            <thead class="bg-slate-100"><tr class="border-b border-slate-300"><th class="p-2 border-r border-slate-300 w-16 text-center">ที่นั่ง</th><th class="p-2 border-r border-slate-300 w-24 text-center">รหัส</th><th class="p-2 border-r border-slate-300 text-left">ชื่อ - สกุล</th><th class="p-2 border-r border-slate-300 w-24 text-left">ระดับชั้น</th><th class="p-2 w-32 text-center">ลายมือชื่อ</th></tr></thead>
+            <tbody>${trs}</tbody>
+          </table>
+        </div>`;
+      });
+      document.getElementById('print-container').innerHTML = html;
+      window.print();
+    }
+
+    // SCORES (CSV Upload / ad-scores)
+    async function loadAdScoresMenu() {
+      showLoad(true); const eO = await db.get('exams'); showLoad(false);
+      allExams = eO ? Object.keys(eO).map(k=>({id:k,...eO[k]})) : [];
+      document.getElementById('as-search').value = '';
+      document.getElementById('as-workspace').classList.add('hidden');
+    }
+    
+    function searchScoreExam() {
+      const q = document.getElementById('as-search').value.toLowerCase();
+      const dd = document.getElementById('as-dropdown');
+      if(!q) { dd.classList.add('hidden'); return; }
+      
+      const filtered = allExams.filter(x => (x.code||'').toLowerCase().includes(q) || x.name.toLowerCase().includes(q));
+      let h = '';
+      filtered.forEach(e => {
+        h += `<div class="p-3 border-b border-slate-100 hover:bg-slate-50 cursor-pointer" onclick="selectScoreExam('${e.id}')">
+          <div class="font-bold text-indigo-700">[${e.code||'-'}] ${e.name}</div><div class="text-xs text-slate-500">สอบวันที่: ${formatThaiDate(e.date)}</div>
+        </div>`;
+      });
+      dd.innerHTML = h || '<div class="p-4 text-center text-slate-500">ไม่พบวิชาสอบ</div>';
+      dd.classList.remove('hidden');
+    }
+    
+    async function selectScoreExam(id) {
+      document.getElementById('as-dropdown').classList.add('hidden');
+      document.getElementById('as-search').value = '';
+      currentExamId = id; const ex = allExams.find(x=>x.id===id);
+      document.getElementById('as-exam-name').textContent = `[${ex.code||'-'}] ${ex.name}`;
+      
+      showLoad(true); const [rO, uO, rmO] = await Promise.all([db.get('registrations'), db.get('users'), db.get(`rooms/${id}`)]); showLoad(false);
+      const rooms = rmO ? Object.keys(rmO).map(k=>({id:k,...rmO[k]})) : [];
+      regsCache = Object.keys(rO||{}).filter(k=>rO[k].examId===id).map(k=>({regId:k,...rO[k],...(uO[rO[k].studentId]||{})}));
+      regsCache.sort((a,b)=>(a.firstName||'').localeCompare(b.firstName||'','th-TH'));
+      
+      let h=''; regsCache.forEach(r => {
+        const rm = rooms.find(x=>x.id===r.roomId);
+        h += `<tr class="hover:bg-slate-50"><td class="p-3 border-b border-slate-100"><strong class="text-slate-800">${r.studentId}</strong><br><span class="text-sm">${r.prefix||''}${r.firstName} ${r.lastName}</span></td><td class="p-3 border-b border-slate-100"><div class="text-indigo-700 font-bold">${rm?rm.name:'-'}</div><div class="text-xs">ที่นั่ง ${r.seatNumber||'-'}</div></td><td class="p-3 text-center border-b border-slate-100"><input type="checkbox" class="cb-absent w-5 h-5 text-rose-500 rounded focus:ring-rose-500 cursor-pointer" data-id="${r.regId}" ${r.isAbsent?'checked':''}></td><td class="p-3 border-b border-slate-100"><input type="number" class="in-score modern-input !mb-0 w-24 p-2 text-center" data-id="${r.regId}" data-st="${r.studentId}" value="${r.score||''}" ${r.isAbsent?'disabled':''}></td></tr>`;
+      });
+      document.getElementById('as-scores-body').innerHTML = h || '<tr><td colspan="4" class="p-8 text-center text-slate-500">ไม่มีผู้สมัครวิชานี้</td></tr>';
+      document.querySelectorAll('.cb-absent').forEach(cb=>cb.addEventListener('change',e=>{const i=document.querySelector(`.in-score[data-id="${e.target.dataset.id}"]`); if(i){ i.disabled=e.target.checked; if(e.target.checked)i.value=''; }}));
+      
+      document.getElementById('as-workspace').classList.remove('hidden');
+    }
+    
+    function handleCSVUpload(e) {
+      const file = e.target.files[0]; if(!file) return;
+      const ex = allExams.find(x=>x.id===currentExamId);
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const lines = evt.target.result.split('\n');
+        const header = lines[0].toLowerCase().trim().split(',');
+        if(header[0]!=='student_id' || header[1]!=='score' || header[2]!=='exam_code') return sAlert('ผิดพลาด', 'หัวข้อคอลัมน์ไม่ถูกต้อง (ต้องเป็น student_id, score, exam_code)', 'error');
+        
+        let successCount=0, errorCount=0;
+        for(let i=1; i<lines.length; i++) {
+          const row = lines[i].trim().split(',');
+          if(row.length < 3) continue;
+          const stId = row[0].trim(), sc = row[1].trim(), ec = row[2].trim();
+          
+          if(ec !== (ex.code||'')) { errorCount++; continue; } // Wrong exam
+          
+          const inScore = document.querySelector(`.in-score[data-st="${stId}"]`);
+          if(inScore) { inScore.value = sc; successCount++; }
+        }
+        sAlert('อัปโหลดเสร็จสิ้น', `อัปโหลดคะแนนลงตารางสำเร็จ ${successCount} รายการ (ข้าม ${errorCount} รายการที่ไม่ตรงเงื่อนไข)\n*กรุณากด "บันทึกคะแนน" อีกครั้งเพื่อเซฟลงระบบ*`, 'success');
+        e.target.value = ''; // reset file input
+      };
+      reader.readAsText(file);
+    }
+    
+    async function saveResultsDirectly() {
+      if(!await sConfirm('ยืนยัน','คุณต้องการบันทึกคะแนนทั้งหมดเข้าสู่ระบบใช่หรือไม่?')) return;
+      const ups = {}; 
+      regsCache.forEach(r=>{ 
+        const a=document.querySelector(`.cb-absent[data-id="${r.regId}"]`).checked;
+        const s=document.querySelector(`.in-score[data-id="${r.regId}"]`).value; 
+        ups[`${r.regId}/isAbsent`]=a; ups[`${r.regId}/score`]=a?"":s; 
+      });
+      showLoad(true); await db.patch('registrations', ups); showLoad(false); sAlert('สำเร็จ','บันทึกผลเรียบร้อย','success');
+    }
+
+    // SUBJECT SCORES
+    async function loadAdSubjScoresMenu() {
+      showLoad(true); const eO = await db.get('exams'); showLoad(false);
+      allExams = eO ? Object.keys(eO).map(k=>({id:k,...eO[k]})) : [];
+      document.getElementById('ass-search').value = '';
+      document.getElementById('ass-workspace').classList.add('hidden');
+    }
+    
+    function searchSubjScoreExam() {
+      const q = document.getElementById('ass-search').value.toLowerCase();
+      const dd = document.getElementById('ass-dropdown');
+      if(!q) { dd.classList.add('hidden'); return; }
+      
+      const filtered = allExams.filter(x => (x.code||'').toLowerCase().includes(q) || x.name.toLowerCase().includes(q));
+      let h = '';
+      filtered.forEach(e => {
+        h += `<div class="p-3 border-b border-slate-100 hover:bg-slate-50 cursor-pointer" onclick="selectSubjScoreExam('${e.id}')">
+          <div class="font-bold text-indigo-700">[${e.code||'-'}] ${e.name}</div><div class="text-xs text-slate-500">สอบวันที่: ${formatThaiDate(e.date)}</div>
+        </div>`;
+      });
+      dd.innerHTML = h || '<div class="p-4 text-center text-slate-500">ไม่พบวิชาสอบ</div>';
+      dd.classList.remove('hidden');
+    }
+    
+    async function selectSubjScoreExam(id) {
+      document.getElementById('ass-dropdown').classList.add('hidden');
+      document.getElementById('ass-search').value = '';
+      currentExamId = id; const ex = allExams.find(x=>x.id===id);
+      document.getElementById('ass-exam-name').textContent = `[${ex.code||'-'}] ${ex.name}`;
+      
+      showLoad(true); const [rO, uO] = await Promise.all([db.get('registrations'), db.get('users')]); showLoad(false);
+      const allRegs = Object.keys(rO||{}).map(k=>({regId:k,...rO[k]}));
+      const myRegs = allRegs.filter(r=>r.examId===id).map(r=>({...r, ...(uO[r.studentId]||{})}));
+      myRegs.sort((a,b)=>(a.firstName||'').localeCompare(b.firstName||'','th-TH'));
+      
+      const st = getExamStats(id, allRegs);
+      
+      document.getElementById('ass-stats').innerHTML = st ? `<span class="font-bold text-emerald-600">Mean: ${st.mean.toFixed(2)}</span> | <span class="font-bold text-indigo-600">SD: ${st.sd.toFixed(2)}</span> | <span class="font-bold text-slate-600">ผู้เข้าสอบ: ${st.scores.length} คน</span>` : 'ไม่มีข้อมูลสถิติ (รอลงคะแนน)';
+
+      let h=''; myRegs.forEach(r => {
+        let scText, tsText='-', prText='-', mdBadge='-';
+        
+        if (r.isAbsent || !r.score || r.score.trim() === '') {
+          scText = '<span class="text-rose-500 font-bold bg-rose-50 px-2 py-1 rounded text-xs">ขาดสอบ</span>';
+        } else {
+          const sc = parseFloat(r.score);
+          scText = `<span class="font-black text-emerald-600">${sc}</span>`;
+          if (st) {
+            tsText = getTScore(sc, st.mean, st.sd);
+            prText = getPercentileRank(sc, st.scores);
+            const md = getMedal(prText);
+            mdBadge = md ? `<span class="${md.color} ${md.bg} px-2 py-1 rounded text-xs font-bold whitespace-nowrap">🥇 ${md.name}</span>` : '-';
+          }
+        }
+        
+        h += `<tr class="hover:bg-slate-50"><td class="p-3 border-b border-slate-100"><strong class="text-slate-800">${r.studentId}</strong><br><span class="text-sm">${r.prefix||''}${r.firstName} ${r.lastName}</span></td><td class="p-3 text-center border-b border-slate-100">${scText}</td><td class="p-3 border-b border-slate-100 text-center font-bold text-slate-600">${tsText}</td><td class="p-3 border-b border-slate-100 text-center font-bold text-slate-600">${prText}</td><td class="p-3 border-b border-slate-100 text-center">${mdBadge}</td></tr>`;
+      });
+      document.getElementById('ass-scores-body').innerHTML = h || '<tr><td colspan="5" class="p-8 text-center text-slate-500">ไม่มีผู้สมัครวิชานี้</td></tr>';
+      document.getElementById('ass-workspace').classList.remove('hidden');
+    }
+
+    // Announcements
+    async function loadAdAnnounce() {
+      showLoad(true); const an = await db.get('announcement'); showLoad(false);
+      document.getElementById('ad-ann-text').value = an ? an.text : '';
+    }
+    async function saveAnnouncement(e) {
+      e.preventDefault(); showLoad(true); await db.put('announcement', { text: document.getElementById('ad-ann-text').value }); showLoad(false); sAlert('สำเร็จ','บันทึกประกาศเรียบร้อย','success');
+    }
+
+  </script>
+</body>
+</html>
