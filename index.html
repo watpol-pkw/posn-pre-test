@@ -11,64 +11,11 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <!-- SheetJS for Excel Export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+  <script src="fonts.js"></script>
   
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap');
-    
-    :root { --primary-color: #4f46e5; }
-    body { font-family: 'Prompt', sans-serif; color: #1e293b; background-color: #f8fafc; overflow: hidden; }
-    
-    .glass-card { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.6); box-shadow: 0 10px 40px -10px rgba(0,0,0,0.05); border-radius: 1.5rem; }
-    .glass-blue { background: rgba(238, 242, 255, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(199, 210, 254, 0.5); }
-    
-    .modern-input { width: 100%; padding: 0.875rem 1rem; border: 1px solid #e2e8f0; border-radius: 1rem; background-color: #f8fafc; margin-bottom: 1.25rem; transition: all 0.3s ease; font-family: 'Prompt', sans-serif; }
-    .modern-input:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); background-color: #fff; }
-    .modern-label { display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #475569; }
-    
-    .btn-primary { background: linear-gradient(to right, #4f46e5, #3b82f6); color: white; padding: 0.875rem 1.5rem; border-radius: 1rem; font-weight: 600; text-align: center; width: 100%; cursor: pointer; border: none; transition: all 0.3s ease; box-shadow: 0 4px 15px -3px rgba(79, 70, 229, 0.4); }
-    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px -3px rgba(79, 70, 229, 0.5); }
-    
-    .btn-secondary { background: white; color: #475569; border: 1px solid #cbd5e1; padding: 0.875rem 1.5rem; border-radius: 1rem; font-weight: 600; text-align: center; width: 100%; cursor: pointer; transition: all 0.3s ease; }
-    .btn-secondary:hover { background: #f1f5f9; color: #0f172a; border-color: #94a3b8; }
-    
-    .fade-in { animation: fadeIn 0.4s ease-out forwards; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-    
-    .loader { border: 4px solid rgba(79, 70, 229, 0.2); border-top: 4px solid #4f46e5; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-    .menu-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.875rem 1rem; border-radius: 0.75rem; font-weight: 600; color: #93c5fd; transition: all 0.2s; cursor: pointer; border-left: 4px solid transparent; }
-    .menu-item:hover { background-color: rgba(255,255,255,0.1); color: #ffffff; }
-    .menu-item.active { background-color: rgba(255,255,255,0.2); color: #ffffff; border-left-color: #60a5fa; }
-    
-    .app-hidden { display: none !important; }
-    
-    @media (min-width: 1024px) {
-      .desktop-closed { width: 0 !important; overflow: hidden !important; opacity: 0 !important; padding: 0 !important; border: none !important; }
-    }
-
-    ::-webkit-scrollbar { width: 8px; height: 8px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
-    /* Print Styles */
-    @media print { 
-      body { background: white !important; font-family: 'Sarabun', sans-serif !important; font-size: 12pt !important; overflow: visible !important; height: auto !important; } 
-      #sidebar, #topnav, .no-print { display: none !important; } 
-      #main-content { overflow: visible !important; height: auto !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
-      #app { display: none !important; } 
-      .page-break { page-break-after: always; break-after: page; }
-      .print-only { display: block !important; }
-      
-      /* Enforce table headers to repeat on every page */
-      table { page-break-inside: auto; width: 100%; border-collapse: collapse; }
-      tr { page-break-inside: avoid; page-break-after: auto; }
-      thead { display: table-header-group; }
-      tfoot { display: table-footer-group; }
-    }
-    .print-only { display: none; }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body class="antialiased flex h-screen w-full relative">
 
@@ -96,16 +43,7 @@
       </button>
     </div>
     
-    <div class="p-6 pb-4 border-b border-white/10 shrink-0">
-      <div class="text-xs uppercase tracking-wider text-blue-300 font-bold mb-3 opacity-80">บัญชีผู้ใช้</div>
-      <div class="flex items-center gap-3">
-        <img src="https://img2.pic.in.th/PKW-Mascotace29467b055eb87.png" class="w-12 h-12 rounded-full border-2 border-white/20 shadow-sm object-cover bg-white" id="sb-avatar">
-        <div class="overflow-hidden">
-          <div class="font-bold text-white text-sm truncate" id="sb-name">-</div>
-          <div class="text-[11px] text-white font-bold bg-white/20 inline-block px-2 py-0.5 rounded-full mt-0.5" id="sb-role">-</div>
-        </div>
-      </div>
-    </div>
+    <!-- Profile moved to topnav -->
 
     <nav class="flex-1 overflow-y-auto p-4 space-y-1" id="sb-menu"></nav>
 
@@ -124,17 +62,27 @@
   <main id="main-content" class="flex-1 h-screen overflow-y-auto w-full relative flex flex-col not-print bg-slate-50 lg:bg-transparent">
     
     <!-- Top Navbar -->
-    <header id="topnav" class="app-hidden sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b-2 border-blue-400 px-4 py-3 flex items-center justify-between shadow-sm shrink-0">
+    <header id="topnav" class="app-hidden sticky top-0 z-40 bg-gradient-to-r from-blue-700 to-indigo-800 lg:bg-white/90 lg:backdrop-blur-md border-b border-blue-900 lg:border-slate-200 px-4 py-2 lg:py-3 flex items-center justify-between shadow-md shrink-0 transition-colors">
       <div class="flex items-center gap-3">
-        <button onclick="toggleSidebar()" class="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        <button onclick="toggleSidebar()" class="p-2 text-white lg:text-slate-600 hover:bg-white/10 lg:hover:bg-slate-100 rounded-lg transition-colors">
+          <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
         </button>
-        <span class="font-bold text-slate-800 lg:hidden">PKW POSN PRE-TEST</span>
+        <span class="font-black text-white lg:hidden">PKW POSN</span>
       </div>
-      <div class="glass-blue rounded-xl px-4 py-2 flex items-center gap-4 text-sm font-bold text-indigo-900 shadow-sm ml-auto">
-        <div class="flex items-center gap-2 hidden sm:flex"><svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg><span id="real-date">--</span></div>
-        <div class="w-px h-4 bg-slate-300 hidden sm:block"></div>
-        <div class="flex items-center gap-2"><svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span id="real-time">--:--</span></div>
+      <div class="flex items-center gap-4 ml-auto">
+        <div class="hidden sm:flex glass-blue lg:bg-slate-100/50 lg:border-slate-200 rounded-xl px-4 py-2 items-center gap-4 text-sm font-bold text-indigo-900 lg:text-slate-600 shadow-sm">
+          <div class="flex items-center gap-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg><span id="real-date">--</span></div>
+          <div class="w-px h-4 bg-slate-300"></div>
+          <div class="flex items-center gap-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span id="real-time">--:--</span></div>
+        </div>
+        
+        <div class="flex items-center gap-2 lg:gap-3 bg-white/10 lg:bg-slate-100/50 p-1 lg:pr-4 rounded-full lg:rounded-xl border border-white/20 lg:border-slate-200 cursor-pointer hover:bg-white/20 lg:hover:bg-slate-200/50 transition-colors" onclick="switchView('sd-profile')">
+          <img src="https://img2.pic.in.th/PKW-Mascotace29467b055eb87.png" class="w-8 h-8 lg:w-9 lg:h-9 rounded-full object-cover bg-white" id="nav-avatar">
+          <div class="hidden lg:block overflow-hidden max-w-[120px]">
+            <div class="font-bold text-white lg:text-slate-800 text-sm truncate leading-tight" id="nav-name">-</div>
+            <div class="text-[10px] text-blue-200 lg:text-indigo-600 font-bold leading-tight" id="nav-role">-</div>
+          </div>
+        </div>
       </div>
     </header>
 
@@ -144,15 +92,18 @@
   <!-- Templates -->
   <div id="templates" class="app-hidden">
     
-    <!-- LOGIN VIEW (V1.5.4) -->
-    <div id="view-login" class="fade-in max-w-5xl mx-auto mt-2 md:mt-4 flex flex-col md:flex-row h-full md:h-auto glass-card overflow-hidden shadow-2xl transition-all duration-300">
+    <!-- WATERMARKS (Now inside the login card) -->
+    <div id="global-watermarks" class="hidden"></div>
+    
+    <!-- LOGIN VIEW (V1.6.1) -->
+    <div id="view-login" class="fade-in max-w-5xl mx-auto mt-2 md:mt-4 flex flex-col md:flex-row h-full md:h-auto glass-card overflow-hidden shadow-2xl transition-all duration-300 relative">
       <!-- Left Side -->
-      <div class="md:w-1/2 p-4 md:p-6 bg-gradient-to-br from-blue-700 via-indigo-600 to-teal-500 flex flex-col justify-center relative text-white">
+      <div class="md:w-1/2 p-4 md:p-6 bg-gradient-to-br from-blue-700 via-indigo-600 to-teal-500 flex flex-col justify-center relative text-white z-10">
         <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 24px 24px;"></div>
         <div class="relative z-10 flex flex-col items-center text-center">
-          <div class="flex items-center justify-center gap-3 mb-4">
-            <img src="https://pkw.ac.th/pkw/toon/logo_pkw.jpg" class="h-12 w-12 md:h-14 md:w-14 object-contain bg-white rounded-2xl p-1.5 shadow-xl">
-            <img src="https://img1.pic.in.th/images/PKW-POSN.png" class="h-12 w-12 md:h-14 md:w-14 object-contain bg-white rounded-2xl p-1.5 shadow-xl">
+          <div class="flex items-center justify-center gap-4 mb-4">
+            <img src="https://pkw.ac.th/pkw/toon/logo_pkw.jpg" class="h-16 w-16 md:h-20 md:w-20 object-contain bg-white rounded-2xl p-1.5 shadow-xl">
+            <img src="https://img1.pic.in.th/images/PKW-POSN.png" class="h-16 w-16 md:h-20 md:w-20 object-contain bg-white rounded-2xl p-1.5 shadow-xl">
           </div>
           <h1 class="text-lg md:text-xl font-black leading-tight mb-2 drop-shadow-md">โครงการทดสอบความรู้<br>เตรียมความพร้อมโอลิมปิกวิชาการ</h1>
           <p class="text-blue-100 font-medium text-base mb-3">โรงเรียนภูเก็ตวิทยาลัย</p>
@@ -184,37 +135,59 @@
           <h2 class="text-xl font-black text-slate-800">เข้าสู่ระบบ</h2>
         </div>
 
-        <div class="bg-slate-100 p-1 rounded-xl flex mb-4 shadow-inner shrink-0">
-          <button type="button" onclick="setLoginRole('student')" id="tab-student" class="flex-1 py-1.5 text-xs md:text-sm font-bold rounded-lg transition-all text-indigo-700 bg-white shadow-sm">นักเรียน</button>
-          <button type="button" onclick="setLoginRole('admin')" id="tab-admin" class="flex-1 py-1.5 text-xs md:text-sm font-bold rounded-lg transition-all text-slate-500 hover:text-slate-700">ผู้ดูแลระบบ</button>
-        </div>
-
         <div class="flex-1 flex flex-col min-h-[220px]">
           <form onsubmit="handleLogin(event)" class="w-full">
-            <input type="hidden" id="login-role" value="student">
-            <div><label class="modern-label" id="lbl-login-id">รหัสนักเรียน (5 หลัก)</label><input type="text" id="login-id" class="modern-input" placeholder="12345" required></div>
-            <div><label class="modern-label">รหัสผ่าน</label><input type="password" id="login-pass" class="modern-input" placeholder="••••••••" required></div>
-            <button type="submit" class="btn-primary mt-2 shadow-lg text-lg">เข้าสู่ระบบ</button>
+            <div class="mb-4">
+              <label class="modern-label text-slate-800 text-base mb-2 font-bold" id="lbl-login-id">ชื่อผู้ใช้ (Username)</label>
+              <div class="relative flex items-center">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <svg class="w-6 h-6 text-slate-400 bg-slate-100 rounded-md p-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"></path></svg>
+                </div>
+                <input type="text" id="login-id" class="w-full py-3.5 pl-14 pr-4 border-2 border-slate-200/80 rounded-[1.25rem] focus:outline-none focus:border-indigo-500 text-slate-700 font-medium bg-white transition-all shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)]" placeholder="Username" required>
+              </div>
+            </div>
+
+            <div class="mb-6">
+              <label class="modern-label text-slate-800 text-base mb-2 font-bold" id="lbl-login-pass">รหัสผ่าน (Password)</label>
+              <div class="relative flex items-center">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <svg class="w-6 h-6 text-slate-400 bg-slate-100 rounded-md p-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                </div>
+                <input type="password" id="login-pass" class="w-full py-3.5 pl-14 pr-12 border-2 border-slate-200/80 rounded-[1.25rem] focus:outline-none focus:border-indigo-500 text-slate-700 font-medium bg-white transition-all shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)]" placeholder="Password" required>
+                <button type="button" onclick="togglePasswordVisibility()" class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-indigo-600 focus:outline-none">
+                  <svg id="eye-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                </button>
+              </div>
+            </div>
+
+            <button type="submit" class="w-full py-4 bg-gradient-to-r from-indigo-600 to-blue-700 hover:from-indigo-700 hover:to-blue-800 text-white rounded-[1.5rem] font-bold text-lg shadow-lg shadow-indigo-600/30 transition-all flex items-center justify-center gap-2 mt-2">เข้าสู่ระบบ <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></button>
           </form>
 
-          <div id="reg-link-container" class="mt-4 transition-all duration-300 overflow-hidden text-center">
+          <div id="reg-link-container" class="mt-4 transition-all duration-300 overflow-hidden text-center h-[44px]">
             <span class="text-slate-500 text-sm">ยังไม่มีบัญชีใช่หรือไม่?</span> <a href="#" onclick="switchView('register'); return false;" class="text-indigo-600 font-bold hover:underline">สมัครสมาชิกที่นี่</a>
           </div>
         </div>
 
         <div class="mt-8 pt-6 border-t border-slate-100 text-center shrink-0">
-          <div class="flex justify-center gap-4 text-slate-300 mb-3 flex-wrap">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><title>ฟิสิกส์</title><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 20.25c4.97 0 9-2.253 9-5.033S16.97 10.184 12 10.184 3 12.437 3 15.217s4.03 5.033 9 5.033zm0 0c4.97 0 9-2.253 9-5.033S16.97 10.184 12 10.184 3 12.437 3 15.217s4.03 5.033 9 5.033zm0-10.066C16.97 10.184 21 7.931 21 5.151S16.97.118 12 .118 3 2.37 3 5.151s4.03 5.033 9 5.033z"></path></svg>
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><title>เคมี</title><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><title>ชีววิทยา</title><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><title>คณิตศาสตร์</title><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><title>คอมพิวเตอร์</title><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><title>ดาราศาสตร์</title><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path></svg>
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><title>ภาษาศาสตร์</title><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path></svg>
+          <div class="flex justify-center gap-3 md:gap-4 mb-4 text-indigo-100">
+            <!-- Math -->
+            <svg class="w-6 h-6 hover:text-indigo-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+            <!-- Physics (Atom) -->
+            <svg class="w-6 h-6 hover:text-blue-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14a2 2 0 100-4 2 2 0 000 4z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.929 4.929C7.45 2.408 11.233 1.83 14 3.195c2.768-1.365 6.55-.787 9.07 1.734C25.592 7.45 26.17 11.233 24.805 14c1.365 2.768.787 6.55-1.734 9.07-2.52 2.52-6.303 3.1-9.07 1.735-2.767 1.365-6.55.787-9.071-1.735-2.521-2.52-3.099-6.302-1.734-9.07-1.365-2.767-.787-6.55 1.734-9.071zm.707.707C3.58 7.692 3.142 10.742 4.3 12.96c-1.157 2.22-.72 5.27 1.336 7.327 2.057 2.057 5.107 2.494 7.327 1.336 2.22 1.158 5.27.72 7.327-1.336 2.057-2.056 2.494-5.106 1.336-7.326 1.158-2.22.72-5.27-1.336-7.327-2.057-2.057-5.107-2.494-7.327-1.336-2.22-1.157-5.27-.72-7.327 1.336z"></path></svg>
+            <!-- Chemistry (Flask) -->
+            <svg class="w-6 h-6 hover:text-teal-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+            <!-- Biology (Microscope) -->
+            <svg class="w-6 h-6 hover:text-green-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 7V5a2 2 0 00-2-2H9a2 2 0 00-2 2v2M5 21h14a2 2 0 002-2v-3a2 2 0 00-2-2H5a2 2 0 00-2 2v3a2 2 0 002 2zM9 7h6M9 7v6M15 7v6M7 13h10v3H7v-3z"></path></svg>
+            <!-- Astronomy (Stars) -->
+            <svg class="w-6 h-6 hover:text-yellow-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path></svg>
+            <!-- Computer -->
+            <svg class="w-6 h-6 hover:text-cyan-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+            <!-- Linguistics -->
+            <svg class="w-6 h-6 hover:text-indigo-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path></svg>
           </div>
-          <div class="text-slate-400 text-[10px] font-medium leading-relaxed mt-3">
-            <p class="font-bold text-slate-500 mb-0.5">©2026 PKW POSN PRE-TEST V1.5.4</p>
-            <p>พัฒนาโดย นายจักรวิทย์ อรรฆกานต์ ณ ตะกั่วทุ่ง</p>
+          <div class="text-slate-400 text-[11px] font-medium leading-relaxed z-10 relative">
+            <p class="font-bold text-slate-500 mb-0.5">©2026 PKW POSN PRE-TEST | V1.6.1</p>
+            <p>พัฒนาโดย <span class="font-black text-indigo-700 text-[12px]">นายจักรวิทย์ อรรฆกานต์ ณ ตะกั่วทุ่ง</span></p>
           </div>
         </div>
       </div>
@@ -274,7 +247,6 @@
           <div id="home-announcement" class="text-slate-700 text-lg leading-relaxed whitespace-pre-wrap font-medium">ไม่มีประกาศ</div>
         </div>
       </div>
-
       <h3 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
         <svg class="w-6 h-6 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
         วิชาสอบที่กำลังจะมาถึง
@@ -324,6 +296,18 @@
       <h2 class="text-3xl font-black text-slate-800 mb-6">แก้ไขข้อมูลส่วนตัว</h2>
       <div class="glass-card p-8 border border-slate-200">
         <form onsubmit="handleEditProfile(event)">
+          <div class="mb-6 flex flex-col items-center">
+            <div class="relative mb-4 group cursor-pointer" onclick="document.getElementById('ep-avatar-upload').click()">
+              <img id="ep-avatar-preview" src="https://img2.pic.in.th/PKW-Mascotace29467b055eb87.png" class="w-24 h-32 md:w-32 md:h-40 object-cover bg-white rounded-xl shadow-md border-2 border-slate-200 transition-transform group-hover:scale-105">
+              <div class="absolute inset-0 bg-indigo-900/60 rounded-xl flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm">
+                <svg class="w-8 h-8 text-white mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                <span class="text-white text-xs font-bold">เปลี่ยนรูป (3:4)</span>
+              </div>
+            </div>
+            <input type="file" id="ep-avatar-upload" accept="image/png, image/jpeg" class="hidden" onchange="handleAvatarUpload(event)">
+            <input type="hidden" id="ep-avatar-base64">
+            <p class="text-[11px] md:text-xs text-slate-500 font-medium">รองรับไฟล์ .jpg, .png (ระบบจะครอปสัดส่วน 3:4 อัตโนมัติ)</p>
+          </div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">
             <div class="md:col-span-2">
               <label class="modern-label">รหัสนักเรียน (ไม่สามารถแก้ไขได้)</label>
@@ -548,6 +532,45 @@
       </div>
     </div>
 
+    <!-- AD-INDIV-SCORES (V1.6.1) -->
+    <div id="view-ad-indiv-scores" class="fade-in">
+      <h2 class="text-3xl font-black text-slate-800 mb-6">คะแนนรายบุคคล</h2>
+      
+      <div class="glass-card p-6 border border-slate-200 mb-6 relative z-20">
+        <label class="modern-label">ค้นหาด้วยรหัสนักเรียน หรือ ชื่อ-สกุล</label>
+        <div class="relative">
+          <input type="text" id="ais-search" oninput="searchIndivScoreStudent()" placeholder="เช่น 00001 หรือ สมชาย..." class="modern-input !mb-0 shadow-sm" autocomplete="off">
+          <div id="ais-dropdown" class="absolute w-full mt-2 bg-white border border-slate-200 shadow-xl rounded-xl max-h-64 overflow-y-auto hidden"></div>
+        </div>
+      </div>
+      
+      <div id="ais-workspace" class="hidden">
+        <div class="glass-card p-6 border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 relative z-10 bg-white/50">
+          <div>
+            <h3 class="text-xl font-bold text-emerald-900" id="ais-student-name">-</h3>
+            <p id="ais-stats" class="text-slate-500 text-sm mt-1"></p>
+          </div>
+        </div>
+        
+        <div class="glass-card p-0 overflow-hidden border border-slate-200 flex flex-col relative z-0">
+          <div class="overflow-x-auto p-0">
+            <table class="w-full text-left text-sm border-collapse whitespace-nowrap">
+              <thead class="bg-slate-50 border-b border-slate-200">
+                <tr>
+                  <th class="p-4 font-semibold text-slate-700">รหัส / วิชาสอบ</th>
+                  <th class="p-4 font-semibold text-center text-slate-700">คะแนน</th>
+                  <th class="p-4 font-semibold text-center text-slate-700">T-Score</th>
+                  <th class="p-4 font-semibold text-center text-slate-700">Percentile</th>
+                  <th class="p-4 font-semibold text-center text-slate-700">รางวัล</th>
+                </tr>
+              </thead>
+              <tbody id="ais-scores-body" class="divide-y divide-slate-100 bg-white/50"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- AD-ANNOUNCE -->
     <div id="view-ad-announce" class="fade-in max-w-2xl">
       <h2 class="text-3xl font-black text-slate-800 mb-6">แจ้งประกาศ</h2>
@@ -646,7 +669,7 @@
           </form>
           <div class="flex gap-2 w-full md:w-auto justify-end">
             <button onclick="autoAssignSeats()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-indigo-700 shadow-sm transition-colors">จัดที่นั่งอัตโนมัติ (ก-ฮ)</button>
-            <button onclick="printRoster(currentExamId)" class="bg-emerald-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-emerald-600 shadow-sm transition-colors">พิมพ์ใบรายชื่อ</button>
+            <button onclick="viewExportList(currentExamId, true)" class="bg-emerald-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-emerald-600 shadow-sm transition-colors">ดูรายชื่อ/ดาวน์โหลด</button>
           </div>
         </div>
         <div class="mt-4 flex flex-wrap gap-4 md:gap-6 text-sm font-bold bg-slate-50 p-4 rounded-xl border border-slate-200">
@@ -665,959 +688,35 @@
     </div>
   </div>
 
-  <!-- Print Roster Container -->
+  <!-- Print Roster Container (Obsolete but kept for safety) -->
   <div id="print-container" class="print-only"></div>
 
-  <script>
-    const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebasedatabase.app/';
-    const SECRET = 'qIqIxmRQXI9WnMsoMeGCOGoxeOpTcWryvMbCpHD9'; 
-    
-    const db = {
-      url: path => `${DB_URL}${path}.json?auth=${SECRET}`,
-      get: async path => { const r = await fetch(db.url(path)); return r.ok ? await r.json() : null; },
-      put: async (path, data) => await fetch(db.url(path), { method:'PUT', body:JSON.stringify(data) }),
-      patch: async (path, data) => await fetch(db.url(path), { method:'PATCH', body:JSON.stringify(data) }),
-      del: async path => await fetch(db.url(path), { method:'DELETE' })
-    };
-
-    let u=null, r=null, allExams=[], currentExamId=null, regsCache=[], roomsCache=[], allStudents=[];
-
-    const showLoad = s => {
-      const l = document.getElementById('loading');
-      if(s) { l.classList.remove('app-hidden'); setTimeout(()=>l.style.opacity='1',10); }
-      else { l.style.opacity='0'; setTimeout(()=>l.classList.add('app-hidden'),300); }
-    };
-    
-    const closeModal = id => document.getElementById(id).classList.add('app-hidden');
-    
-    function toggleSidebar() {
-      const sb = document.getElementById('sidebar');
-      if(window.innerWidth >= 1024) {
-        sb.classList.toggle('desktop-closed');
-      } else {
-        sb.classList.toggle('-translate-x-full');
-        document.getElementById('sidebar-overlay').classList.toggle('app-hidden');
-      }
-    }
-
-    const sAlert = (title, text, icon='info') => Swal.fire({ title, text, icon, confirmButtonText: 'ตกลง', confirmButtonColor: '#4f46e5' });
-    const sConfirm = async (title, text) => {
-      const res = await Swal.fire({ title, text, icon: 'warning', showCancelButton: true, confirmButtonColor: '#10b981', cancelButtonColor: '#ef4444', confirmButtonText: 'ยืนยัน', cancelButtonText: 'ยกเลิก' });
-      return res.isConfirmed;
-    };
-
-    function formatThaiDate(isoString) {
-      if(!isoString) return '-';
-      const d = new Date(isoString);
-      if(isNaN(d)) return isoString;
-      const thMonth = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
-      return `${d.getDate()} ${thMonth[d.getMonth()]} ${d.getFullYear() + 543}`;
-    }
-
-    function updateClock() {
-      const now = new Date();
-      document.getElementById('real-date').textContent = formatThaiDate(now);
-      document.getElementById('real-time').textContent = now.toLocaleTimeString('th-TH', { hour:'2-digit', minute:'2-digit', second:'2-digit' }) + ' น.';
-    }
-    setInterval(updateClock, 1000); updateClock();
-
-    function switchView(v) {
-      document.getElementById('app').innerHTML = '';
-      const tpl = document.getElementById('view-'+v);
-      if(tpl) document.getElementById('app').appendChild(tpl.cloneNode(true));
-      
-      const sb = document.getElementById('sidebar');
-      const tn = document.getElementById('topnav');
-      
-      if(v==='login' || v==='register') { 
-        sb.classList.add('app-hidden'); tn.classList.add('app-hidden');
-      } else { 
-        sb.classList.remove('app-hidden'); tn.classList.remove('app-hidden');
-        document.getElementById('sb-name').textContent = u.firstName ? `${u.firstName} ${u.lastName}` : u.name;
-        document.getElementById('sb-role').textContent = r==='student' ? `ชั้น ${u.grade}/${u.room}` : u.name; 
-      }
-    }
-
-    function renderMenu(activeId) {
-      const menu = document.getElementById('sb-menu'); menu.innerHTML = '';
-      const iconClass = "w-5 h-5";
-      const addItem = (id, iconSvg, text, view) => {
-        const act = activeId === id ? 'active' : '';
-        menu.innerHTML += `<div onclick="renderMenu('${id}'); switchView('${view}'); if(window.innerWidth<1024) toggleSidebar(); initView('${id}');" class="menu-item ${act}">${iconSvg} <span>${text}</span></div>`;
-      };
-      
-      if(r==='student') {
-        addItem('home', `<svg class="${iconClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>`, 'หน้าหลัก', 'sd-home');
-        addItem('enroll', `<svg class="${iconClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>`, 'สมัครสอบ', 'sd-enroll');
-        addItem('tickets', `<svg class="${iconClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path></svg>`, 'บัตรเข้าสอบ', 'sd-tickets');
-        addItem('results', `<svg class="${iconClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`, 'ผลการสอบ', 'sd-results');
-        addItem('profile', `<svg class="${iconClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>`, 'แก้ไขข้อมูล', 'sd-profile');
-      } else {
-        const isExec = u.role === 'executive';
-        const isMgr = u.role === 'manager';
-        
-        if (isExec) {
-          addItem('ad-home', `<svg class="${iconClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2z"></path></svg>`, 'แผงควบคุม', 'ad-home');
-          addItem('ad-subj-scores', `<svg class="${iconClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 14l9-5-9-5-9 5 9 5z"></path><path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"></path></svg>`, 'คะแนนรายวิชา', 'ad-subj-scores');
-          addItem('ad-reports', `<svg class="${iconClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>`, 'รายงานผล', 'ad-reports');
-        } else {
-          addItem('ad-home', `<svg class="${iconClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2z"></path></svg>`, 'แผงควบคุม', 'ad-home');
-          if(!isMgr) addItem('ad-students', `<svg class="${iconClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>`, 'จัดการนักเรียน', 'ad-students');
-          addItem('ad-exams', `<svg class="${iconClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>`, 'จัดการวิชาสอบ', 'ad-exams');
-          addItem('ad-rooms', `<svg class="${iconClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>`, 'จัดห้องสอบ', 'ad-rooms');
-          if(!isMgr) addItem('ad-scores', `<svg class="${iconClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>`, 'บันทึกคะแนน', 'ad-scores');
-          addItem('ad-subj-scores', `<svg class="${iconClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 14l9-5-9-5-9 5 9 5z"></path><path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"></path></svg>`, 'คะแนนรายวิชา', 'ad-subj-scores');
-          addItem('ad-reports', `<svg class="${iconClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>`, 'รายงานผล', 'ad-reports');
-          if(!isMgr) addItem('ad-announce', `<svg class="${iconClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path></svg>`, 'แจ้งประกาศ', 'ad-announce');
-        }
-      }
-    }
-
-    function initView(id) {
-      if(id==='home') loadSdHome();
-      else if(id==='enroll') loadSdEnroll();
-      else if(id==='tickets') loadSdTickets();
-      else if(id==='results') loadSdResults();
-      else if(id==='profile') loadSdProfile();
-      else if(id==='ad-home') loadAdHome();
-      else if(id==='ad-students') loadAdStudents();
-      else if(id==='ad-exams') loadAdExams();
-      else if(id==='ad-rooms') loadAdRooms();
-      else if(id==='ad-scores') loadAdScoresMenu();
-      else if(id==='ad-subj-scores') loadAdSubjScoresMenu();
-      else if(id==='ad-announce') loadAdAnnounce();
-      else if(id==='ad-reports') loadAdReports();
-    }
-
-    // Force init roles in DB if not exist (fixes Manager/Executive login issue)
-    async function initRolesDB() {
-      const a = await db.get('admins');
-      if(!a || !a.posnpkw || !a.vicha || !a.admin) {
-        const ups = {};
-        if(!a || !a.admin) ups['admin'] = { password:'admin', name:'Super Admin', role:'admin' };
-        if(!a || !a.posnpkw) ups['posnpkw'] = { password:'posn1234pkw', name:'ผู้จัดการ', role:'manager' };
-        if(!a || !a.vicha) ups['vicha'] = { password:'vi1234', name:'ผู้บริหาร', role:'executive' };
-        if(Object.keys(ups).length) await db.patch('admins', ups);
-      }
-    }
-
-    document.addEventListener('DOMContentLoaded', async () => {
-      try { await initRolesDB(); } catch(e){}
-      checkSess();
-    });
-
-    function checkSess() {
-      const s = sessionStorage.getItem('posnSess');
-      if(s) { 
-        const p=JSON.parse(s); u=p.u; r=p.r;
-        let defTab = 'ad-home';
-        if(r === 'student') defTab = 'home';
-        
-        renderMenu(defTab); 
-        switchView(r==='student'?'sd-home':'ad-home');
-        initView(defTab); 
-      }
-      else { switchView('login'); }
-    }
-    
-    async function logout() {
-      if(await sConfirm('ออกจากระบบ', 'คุณต้องการออกจากระบบใช่หรือไม่?')) { sessionStorage.removeItem('posnSess'); u=null; r=null; checkSess(); }
-    }
-
-    function setLoginRole(role) {
-      document.getElementById('login-role').value = role;
-      document.getElementById('tab-student').className = `flex-1 py-2 text-sm font-bold rounded-lg transition-all ${role==='student'?'text-indigo-700 bg-white shadow-sm':'text-slate-500 hover:text-slate-700'}`;
-      document.getElementById('tab-admin').className = `flex-1 py-2 text-sm font-bold rounded-lg transition-all ${role==='admin'?'text-indigo-700 bg-white shadow-sm':'text-slate-500 hover:text-slate-700'}`;
-      document.getElementById('lbl-login-id').textContent = role==='student'?'รหัสนักเรียน (5 หลัก)':'ชื่อผู้ใช้งาน (Username)';
-      document.getElementById('login-id').placeholder = role==='student'?'12345':'username';
-      document.getElementById('reg-link-container').style.height = role==='student' ? '44px' : '0px';
-      document.getElementById('reg-link-container').style.opacity = role==='student' ? '1' : '0';
-      document.getElementById('login-id').value = '';
-      document.getElementById('login-pass').value = '';
-    }
-
-    async function handleLogin(e) {
-      e.preventDefault(); showLoad(true);
-      const role = document.getElementById('login-role').value, id = document.getElementById('login-id').value.trim(), pass = document.getElementById('login-pass').value;
-      const data = await db.get(role==='admin' ? `admins/${id}` : `users/${id}`);
-      showLoad(false);
-      if(data && data.password===pass) {
-        if(role!=='admin') data.studentId = id;
-        sessionStorage.setItem('posnSess', JSON.stringify({u:data, r:role})); checkSess();
-      } else { sAlert('ผิดพลาด', 'ข้อมูลเข้าสู่ระบบไม่ถูกต้อง', 'error'); }
-    }
-
-    async function handleRegister(e) {
-      e.preventDefault(); showLoad(true);
-      const id = document.getElementById('reg-id').value;
-      const d = { password:document.getElementById('reg-pass').value, prefix:document.getElementById('reg-prefix').value, firstName:document.getElementById('reg-first').value, lastName:document.getElementById('reg-last').value, grade:document.getElementById('reg-grade').value, room:document.getElementById('reg-room').value, rollNumber:document.getElementById('reg-roll').value, phone:document.getElementById('reg-phone').value, role:'student' };
-      if(await db.get(`users/${id}`)) { showLoad(false); sAlert('ไม่สำเร็จ','รหัสนักเรียนนี้ถูกใช้ลงทะเบียนไปแล้ว!','error'); return; }
-      await db.put(`users/${id}`, d); showLoad(false);
-      sAlert('สำเร็จ','ลงทะเบียนเรียบร้อย กรุณาเข้าสู่ระบบ','success').then(()=>switchView('login'));
-    }
-
-    /* ---- STUDENT LOGIC ---- */
-    async function fetchSdData() {
-      const [ex, rg, an, rm] = await Promise.all([db.get('exams'), db.get('registrations'), db.get('announcement'), db.get('rooms')]);
-      const exams = ex ? Object.keys(ex).map(k=>({id:k,...ex[k]})) : [];
-      const regs = rg ? Object.keys(rg).map(k=>({id:k,...rg[k]})).filter(x=>x.studentId===u.studentId) : [];
-      const rooms = rm || {};
-      const allRegsList = rg ? Object.keys(rg).map(k=>({id:k,...rg[k]})) : [];
-      return { exams, regs, an, rooms, allRegsList };
-    }
-
-    async function loadSdHome() {
-      showLoad(true); const d = await fetchSdData(); showLoad(false);
-      document.getElementById('home-name').textContent = `${u.prefix||''} ${u.firstName} ${u.lastName}`;
-      document.getElementById('home-info').textContent = `ชั้น ${u.grade}/${u.room} เลขที่ ${u.rollNumber} | รหัส: ${u.studentId}`;
-      document.getElementById('home-announcement').textContent = d.an ? d.an.text : 'ไม่มีประกาศ';
-      
-      const today = new Date().toISOString().split('T')[0];
-      const up = d.regs.map(r=>{
-        const ex = d.exams.find(x=>x.id===r.examId);
-        return ex && ex.date >= today ? {...ex} : null;
-      }).filter(Boolean).sort((a,b)=>a.date.localeCompare(b.date));
-
-      let h = ''; up.forEach(e => {
-        h += `<div class="border border-slate-200 p-4 rounded-xl bg-white shadow-sm flex flex-col justify-center hover:-translate-y-1 transition-transform cursor-pointer" onclick="renderMenu('tickets'); switchView('sd-tickets'); initView('tickets');">
-          <strong class="text-indigo-900 text-lg">[${e.code||'-'}] ${e.name}</strong>
-          <span class="text-slate-500 text-sm mt-1 flex items-center gap-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg> ${formatThaiDate(e.date)} | ${e.startTime}-${e.endTime} น.</span>
-        </div>`;
-      });
-      document.getElementById('home-upcoming').innerHTML = h || '<div class="col-span-2 text-center text-slate-500 p-6 bg-slate-50 rounded-xl border border-slate-200">ไม่มีวิชาสอบที่กำลังจะมาถึง</div>';
-    }
-
-    async function loadSdEnroll() {
-      showLoad(true); const d = await fetchSdData(); showLoad(false);
-      const avail = d.exams.filter(ex=>ex.allowedGrades && ex.allowedGrades.includes(u.grade));
-      const myIds = d.regs.map(r=>r.examId);
-      const today = new Date().toISOString().split('T')[0];
-
-      let h = ''; avail.forEach(e => {
-        const isReg = myIds.includes(e.id);
-        const isOpen = today >= e.regOpenDate && today <= e.regCloseDate;
-        const isFull = e.capacity !== 999 && (e.enrolledCount||0) >= e.capacity;
-        
-        let btn = `<button onclick="regExam('${e.id}')" class="w-full mt-4 py-2.5 rounded-xl font-bold shadow-sm transition-all bg-indigo-600 text-white hover:bg-indigo-700">สมัครสอบวิชานี้</button>`;
-        if(isReg) {
-          if (isOpen) {
-            btn = `<button onclick="cancelReg('${e.id}')" class="w-full mt-4 py-2.5 rounded-xl font-bold shadow-sm transition-all bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200">❌ ยกเลิกการสมัคร</button>`;
-          } else {
-            btn = `<button disabled class="w-full mt-4 py-2.5 rounded-xl font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">✅ สมัครแล้ว</button>`;
-          }
-        }
-        else if(!isOpen) btn = `<button disabled class="w-full mt-4 py-2.5 rounded-xl font-bold bg-slate-100 text-slate-400">ไม่อยู่ในช่วงรับสมัคร</button>`;
-        else if(isFull) btn = `<button disabled class="w-full mt-4 py-2.5 rounded-xl font-bold bg-rose-50 text-rose-500 border border-rose-200">ที่นั่งเต็ม</button>`;
-
-        h += `<div class="glass-card p-6 border border-slate-200 flex flex-col justify-between hover:shadow-lg transition-all">
-          <div><div class="flex justify-between items-start mb-2"><strong class="text-xl text-indigo-900">[${e.code||'-'}] ${e.name}</strong><span class="bg-indigo-50 text-indigo-700 text-xs font-bold px-2 py-1 rounded">รับ ${e.capacity===999?'ไม่จำกัด':`${e.enrolledCount||0}/${e.capacity}`}</span></div>
-          <div class="text-slate-600 text-sm mb-1">📅 ${formatThaiDate(e.date)} | ⏱ ${e.startTime}-${e.endTime} น.</div>
-          <div class="text-xs font-bold text-amber-600 bg-amber-50 inline-block px-2 py-1 rounded mt-2">รับสมัคร: ${formatThaiDate(e.regOpenDate)} - ${formatThaiDate(e.regCloseDate)}</div></div>${btn}
-        </div>`;
-      });
-      document.getElementById('enroll-list').innerHTML = h || '<div class="col-span-2 text-center text-slate-500">ไม่มีวิชาที่เปิดรับสมัคร</div>';
-    }
-
-    async function regExam(id) {
-      if(!await sConfirm('ยืนยันสมัครสอบ','คุณต้องการสมัครสอบวิชานี้ใช่หรือไม่?')) return;
-      showLoad(true); 
-      const ex = await db.get(`exams/${id}`);
-      if(ex.capacity !== 999 && (ex.enrolledCount||0)>=ex.capacity) { showLoad(false); return sAlert('ไม่สำเร็จ','ที่นั่งเต็มแล้ว','error'); }
-      
-      const rO = await db.get('registrations');
-      const myRegs = Object.keys(rO||{}).map(k=>rO[k]).filter(r=>r.studentId===u.studentId);
-      const eO = await db.get('exams');
-      const allEx = eO ? Object.keys(eO).map(k=>({id:k,...eO[k]})) : [];
-      
-      for(const r of myRegs) {
-        const oEx = allEx.find(x=>x.id===r.examId);
-        if(oEx && oEx.date === ex.date) {
-          if(oEx.startTime < ex.endTime && oEx.endTime > ex.startTime) {
-            showLoad(false); 
-            return sAlert('ไม่สามารถสมัครได้', `เวลาสอบชนกับวิชา [${oEx.code||'-'}] ${oEx.name}`, 'error');
-          }
-        }
-      }
-
-      await db.put(`registrations/${u.studentId}_${id}`, { studentId:u.studentId, examId:id, timestamp:new Date().toISOString(), roomId:'', seatNumber:'', score:'', isAbsent:false });
-      await db.patch(`exams/${id}`, { enrolledCount:(ex.enrolledCount||0)+1 });
-      showLoad(false); sAlert('สำเร็จ','สมัครสอบเรียบร้อยแล้ว','success'); initView('enroll');
-    }
-
-    async function cancelReg(id) {
-      if(!await sConfirm('ยืนยันยกเลิก','คุณต้องการยกเลิกการสมัครสอบวิชานี้ใช่หรือไม่?')) return;
-      showLoad(true); const ex = await db.get(`exams/${id}`);
-      await db.del(`registrations/${u.studentId}_${id}`);
-      if(ex && ex.enrolledCount > 0) {
-        await db.patch(`exams/${id}`, { enrolledCount: (ex.enrolledCount||1) - 1 });
-      }
-      showLoad(false); sAlert('สำเร็จ','ยกเลิกการสมัครเรียบร้อยแล้ว','success'); initView('enroll');
-    }
-
-    async function loadSdTickets() {
-      showLoad(true); const d = await fetchSdData(); showLoad(false);
-      const validRegs = d.regs.filter(r=>d.exams.some(x=>x.id===r.examId));
-      let h = ''; validRegs.forEach(r => {
-        const ex = d.exams.find(x=>x.id===r.examId);
-        const rm = r.roomId && d.rooms[ex.id] ? d.rooms[ex.id][r.roomId] : null;
-        const rmName = rm ? rm.name : 'รอประกาศ';
-        const seat = r.seatNumber ? String(r.seatNumber).padStart(2,'0') : '-';
-        h += `<div class="bg-white border-2 border-slate-200 rounded-2xl p-6 relative overflow-hidden shadow-sm">
-          <div class="absolute top-0 right-0 bg-indigo-600 text-white font-black px-4 py-2 rounded-bl-2xl shadow-sm text-sm">${ex.code||'-'}</div>
-          <div class="mb-4 pt-4 border-b border-slate-100 pb-4">
-            <div class="text-slate-500 text-xs font-bold uppercase tracking-wider">ข้อมูลผู้สอบ</div>
-            <div class="font-bold text-lg text-slate-800">${u.studentId} | ${u.prefix||''}${u.firstName} ${u.lastName}</div>
-          </div>
-          <div class="mb-4">
-            <div class="text-slate-500 text-xs font-bold uppercase tracking-wider">รายวิชาสอบ</div>
-            <div class="font-bold text-lg text-indigo-700">${ex.name}</div>
-          </div>
-          <div class="grid grid-cols-2 gap-4 mb-4 text-sm">
-            <div><span class="block text-slate-500 text-xs font-bold">วันที่สอบ</span><span class="font-bold text-slate-700">${formatThaiDate(ex.date)}</span></div>
-            <div><span class="block text-slate-500 text-xs font-bold">เวลาสอบ</span><span class="font-bold text-slate-700">${ex.startTime}-${ex.endTime} น.</span></div>
-          </div>
-          <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-4 flex justify-between items-center">
-            <div><span class="block text-indigo-400 text-xs font-bold uppercase tracking-widest">ห้องสอบ</span><span class="font-black text-indigo-900 text-xl">${rmName}</span></div>
-            <div class="text-right"><span class="block text-rose-400 text-xs font-bold uppercase tracking-widest">ลำดับที่นั่ง</span><span class="font-black text-rose-600 text-4xl leading-none">${seat}</span></div>
-          </div>
-        </div>`;
-      });
-      document.getElementById('tickets-list').innerHTML = h || '<div class="col-span-2 text-center text-slate-500">ไม่มีข้อมูลบัตรเข้าสอบ</div>';
-    }
-
-    // STATS FUNCTIONS
-    function getExamStats(examId, allRegs) {
-      const scores = allRegs.filter(r=>r.examId===examId && r.score && r.score.trim() !== '' && !r.isAbsent).map(r=>parseFloat(r.score)).sort((a,b)=>a-b);
-      if(!scores.length) return null;
-      const sum = scores.reduce((a,b)=>a+b, 0);
-      const mean = sum / scores.length;
-      const variance = scores.reduce((a,b)=>a + Math.pow(b-mean, 2), 0) / scores.length;
-      const sd = Math.sqrt(variance) || 1; // avoid /0
-      return { mean, sd, scores };
-    }
-    function getPercentileRank(score, sortedScores) {
-      const count = sortedScores.filter(s => s <= score).length;
-      return ((count / sortedScores.length) * 100).toFixed(2);
-    }
-    function getTScore(score, mean, sd) {
-      return (50 + 10 * ((score - mean) / sd)).toFixed(2);
-    }
-    function getMedal(pr) {
-      const p = parseFloat(pr);
-      if(p >= 95) return { name: 'เหรียญทอง', color: 'text-amber-500', bg: 'bg-amber-50' };
-      if(p >= 85) return { name: 'เหรียญเงิน', color: 'text-slate-500', bg: 'bg-slate-100' };
-      if(p >= 70) return { name: 'เหรียญทองแดง', color: 'text-orange-700', bg: 'bg-orange-50' };
-      return null;
-    }
-
-    async function loadSdResults() {
-      showLoad(true); const d = await fetchSdData(); showLoad(false);
-      const validRegs = d.regs.filter(r=>d.exams.some(x=>x.id===r.examId));
-      let h = ''; validRegs.forEach(r => {
-        const ex = d.exams.find(x=>x.id===r.examId);
-        const st = getExamStats(ex.id, d.allRegsList);
-        
-        if(r.isAbsent) {
-          h += `<tr><td class="p-4 border-b border-slate-100"><strong class="text-slate-800">[${ex.code||'-'}] ${ex.name}</strong></td><td colspan="5" class="p-4 border-b border-slate-100 text-center"><span class="text-rose-500 font-bold bg-rose-50 px-3 py-1.5 rounded-lg border border-rose-200">ขาดสอบ</span></td></tr>`;
-        } else if (!r.score) {
-          h += `<tr><td class="p-4 border-b border-slate-100"><strong class="text-slate-800">[${ex.code||'-'}] ${ex.name}</strong></td><td colspan="5" class="p-4 border-b border-slate-100 text-center"><span class="text-amber-500 font-bold bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200">รอประกาศผล</span></td></tr>`;
-        } else if (st) {
-          const sc = parseFloat(r.score);
-          const ts = getTScore(sc, st.mean, st.sd);
-          const pr = getPercentileRank(sc, st.scores);
-          const md = getMedal(pr);
-          const mdBadge = md ? `<span class="${md.color} ${md.bg} px-2 py-1 rounded text-xs font-bold border border-current whitespace-nowrap">🥇 ${md.name}</span>` : '<span class="text-slate-400 text-xs">-</span>';
-          
-          h += `<tr class="hover:bg-slate-50">
-            <td class="p-4 border-b border-slate-100"><strong class="text-slate-800">[${ex.code||'-'}] ${ex.name}</strong></td>
-            <td class="p-4 border-b border-slate-100 text-center font-black text-lg text-emerald-600">${sc}</td>
-            <td class="p-4 border-b border-slate-100 text-center font-bold text-slate-600">${ts}</td>
-            <td class="p-4 border-b border-slate-100 text-center font-bold text-slate-600">PR ${pr}</td>
-            <td class="p-4 border-b border-slate-100 text-center">${mdBadge}</td>
-            <td class="p-4 border-b border-slate-100 text-center">
-              <div class="flex items-center justify-center gap-2">
-                <button onclick="showScorePopup('${ex.name}', ${sc}, ${ts}, ${pr}, '${md?md.name:''}')" class="bg-indigo-100 text-indigo-700 p-2 rounded-lg hover:bg-indigo-200 transition-colors" title="ดูรายละเอียดคะแนน"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg></button>
-                ${md ? `<button onclick="downloadCert('${ex.name}', '${md.name}')" class="bg-amber-100 text-amber-700 p-2 rounded-lg hover:bg-amber-200 transition-colors font-bold text-sm flex items-center gap-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path></svg> เกียรติบัตร</button>` : ''}
-              </div>
-            </td>
-          </tr>`;
-        }
-      });
-      document.getElementById('results-list').innerHTML = h || '<tr><td colspan="6" class="p-8 text-center text-slate-500">ไม่มีข้อมูลผลการสอบ</td></tr>';
-    }
-
-    function showScorePopup(name, sc, ts, pr, md) {
-      let html = `
-        <div class="text-left mt-4">
-          <div class="bg-indigo-50 border border-indigo-100 p-4 rounded-xl mb-4 text-center">
-            <div class="text-slate-500 text-sm font-bold uppercase tracking-widest mb-1">คะแนนดิบ</div>
-            <div class="text-5xl font-black text-indigo-700">${sc}</div>
-          </div>
-          <div class="grid grid-cols-2 gap-4 mb-4">
-            <div class="bg-slate-50 border border-slate-200 p-3 rounded-xl text-center"><div class="text-slate-500 text-xs font-bold uppercase mb-1">T-Score</div><div class="text-xl font-bold text-slate-700">${ts}</div></div>
-            <div class="bg-slate-50 border border-slate-200 p-3 rounded-xl text-center"><div class="text-slate-500 text-xs font-bold uppercase mb-1">Percentile</div><div class="text-xl font-bold text-slate-700">PR ${pr}</div></div>
-          </div>
-          ${md ? `<div class="bg-amber-50 border border-amber-200 p-3 rounded-xl text-center"><div class="text-amber-600 text-xs font-bold uppercase mb-1">ระดับรางวัลเกียรติบัตร</div><div class="text-2xl font-black text-amber-500">🥇 ${md}</div></div>` : ''}
+  <!-- Export List Modal (Slide Replace) -->
+  <div id="modal-export-list" class="app-hidden fixed inset-0 z-[120] bg-slate-900/60 backdrop-blur-sm flex justify-center items-center p-4 transition-opacity duration-300">
+    <div id="mel-card" class="bg-white rounded-2xl w-full max-w-5xl h-[90vh] flex flex-col shadow-2xl relative overflow-hidden transform translate-x-full transition-transform duration-300">
+      <div class="p-6 border-b border-slate-100 bg-slate-50 flex justify-between items-center shrink-0">
+      <div class="flex items-center gap-4">
+        <button onclick="closeModalExportList()" class="text-slate-500 hover:text-slate-800 bg-white border border-slate-200 hover:bg-slate-100 px-4 py-2 rounded-xl transition-colors flex items-center gap-2 font-bold shadow-sm">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg> กลับ
+        </button>
+        <div>
+          <h3 class="text-2xl font-black text-slate-800" id="mel-title">รายชื่อนักเรียน</h3>
+          <p class="text-sm font-bold text-slate-500 mt-1" id="mel-subtitle"></p>
         </div>
-      `;
-      Swal.fire({ title: name, html: html, confirmButtonText: 'ปิด', confirmButtonColor: '#4f46e5', width: 400 });
-    }
+      </div>
+    </div>
+    <div class="p-4 flex gap-3 border-b border-slate-100 bg-white justify-end shrink-0 shadow-sm z-10 relative">
+      <button onclick="downloadExportExcel()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-5 py-2.5 rounded-xl shadow-md transition-all text-sm flex items-center gap-2 transform hover:-translate-y-0.5"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg> ดาวน์โหลด Excel</button>
+      <button onclick="downloadExportPDF()" class="bg-rose-500 hover:bg-rose-600 text-white font-bold px-5 py-2.5 rounded-xl shadow-md transition-all text-sm flex items-center gap-2 transform hover:-translate-y-0.5"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg> ดาวน์โหลด PDF</button>
+    </div>
+    <div class="flex-1 overflow-y-auto p-0 bg-white">
+      <table class="w-full text-left border-collapse">
+        <thead id="mel-thead" class="bg-slate-100 sticky top-0 border-b border-slate-200"></thead>
+        <tbody id="mel-tbody" class="divide-y divide-slate-100"></tbody>
+      </table>
+    </div>
+  </div>
 
-    function downloadCert(exName, mdName) {
-      // Future feature structure
-      sAlert('ฟีเจอร์ดาวน์โหลดเกียรติบัตร', `ดาวน์โหลดเกียรติบัตร ${mdName} สำหรับวิชา ${exName} (จะพร้อมใช้งานเร็วๆ นี้)`, 'info');
-    }
-
-    // Profile Edit
-    function loadSdProfile() {
-      document.getElementById('ep-id').value = u.studentId;
-      document.getElementById('ep-pass').value = '';
-      document.getElementById('ep-prefix').value = u.prefix || 'เด็กชาย';
-      document.getElementById('ep-first').value = u.firstName;
-      document.getElementById('ep-last').value = u.lastName;
-      document.getElementById('ep-grade').value = u.grade;
-      document.getElementById('ep-room').value = u.room;
-      document.getElementById('ep-roll').value = u.rollNumber;
-      document.getElementById('ep-phone').value = u.phone;
-    }
-    
-    async function handleEditProfile(e) {
-      e.preventDefault();
-      const pass = document.getElementById('ep-pass').value;
-      const d = {
-        prefix: document.getElementById('ep-prefix').value,
-        firstName: document.getElementById('ep-first').value,
-        lastName: document.getElementById('ep-last').value,
-        grade: document.getElementById('ep-grade').value,
-        room: document.getElementById('ep-room').value,
-        rollNumber: document.getElementById('ep-roll').value,
-        phone: document.getElementById('ep-phone').value,
-      };
-      if(pass) d.password = pass;
-      
-      showLoad(true); await db.patch(`users/${u.studentId}`, d); 
-      u = {...u, ...d}; sessionStorage.setItem('posnSess', JSON.stringify({u,r}));
-      showLoad(false); sAlert('สำเร็จ','อัปเดตข้อมูลส่วนตัวเรียบร้อยแล้ว','success');
-    }
-
-    /* ---- ADMIN LOGIC ---- */
-    async function loadAdHome() {
-      if(u.role==='executive') return switchView('ad-reports');
-      document.getElementById('ad-welcome-title').textContent = u.role==='manager' ? 'ยินดีต้อนรับ ผู้จัดการ' : 'ยินดีต้อนรับ ผู้ดูแลระบบ';
-      showLoad(true); const [uO, eO, rO] = await Promise.all([db.get('users'), db.get('exams'), db.get('registrations')]); showLoad(false);
-      const st = Object.keys(uO||{}).filter(k=>uO[k].role==='student').length; const ex = Object.keys(eO||{}).length; const rg = Object.keys(rO||{}).length;
-      document.getElementById('ad-stats').innerHTML = `
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200"><div class="text-slate-500 font-bold text-sm">นักเรียนในระบบ</div><div class="text-4xl font-black text-indigo-600 mt-2">${st}</div></div>
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200"><div class="text-slate-500 font-bold text-sm">วิชาสอบที่เปิด</div><div class="text-4xl font-black text-blue-600 mt-2">${ex}</div></div>
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200"><div class="text-slate-500 font-bold text-sm">ยอดการสมัครทั้งหมด</div><div class="text-4xl font-black text-emerald-600 mt-2">${rg}</div></div>
-      `;
-    }
-    
-    // Reports
-    async function loadAdReports() {
-      showLoad(true); const [uO, eO, rO] = await Promise.all([db.get('users'), db.get('exams'), db.get('registrations')]); showLoad(false);
-      
-      const st = Object.keys(uO||{}).filter(k=>uO[k].role==='student').length;
-      const ex = Object.keys(eO||{}).length;
-      const regsList = Object.keys(rO||{}).map(k=>rO[k]);
-      
-      document.getElementById('rp-total-students').textContent = st;
-      document.getElementById('rp-total-exams').textContent = ex;
-      document.getElementById('rp-total-regs').textContent = regsList.length;
-      
-      const exams = Object.keys(eO||{}).map(k=>({id:k,...eO[k]}));
-      const labels = []; const data = [];
-      let scoreHtml = '';
-      
-      exams.sort((a,b)=>a.date.localeCompare(b.date)).forEach(e => {
-        labels.push(`[${e.code||'-'}]`);
-        const eRegs = regsList.filter(x=>x.examId===e.id);
-        data.push(eRegs.length);
-        
-        const scores = eRegs.map(x=>parseFloat(x.score)).filter(x=>!isNaN(x));
-        if(scores.length > 0) {
-          const max = Math.max(...scores);
-          const min = Math.min(...scores);
-          const avg = (scores.reduce((a,b)=>a+b, 0) / scores.length).toFixed(2);
-          scoreHtml += `<tr><td class="p-3 border-b border-slate-100 text-slate-700">[${e.code||'-'}] ${e.name}</td><td class="p-3 text-center text-emerald-600 font-bold border-b border-slate-100">${max}</td><td class="p-3 text-center text-rose-600 font-bold border-b border-slate-100">${min}</td><td class="p-3 text-center text-indigo-600 font-bold border-b border-slate-100">${avg}</td></tr>`;
-        }
-      });
-      
-      document.getElementById('rp-scores-body').innerHTML = scoreHtml || '<tr><td colspan="4" class="p-4 text-center text-slate-500">ยังไม่มีข้อมูลการบันทึกคะแนน</td></tr>';
-
-      const ctx = document.getElementById('reportChart').getContext('2d');
-      if(window.rpChart) window.rpChart.destroy();
-      window.rpChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: labels,
-          datasets: [{ label: 'ยอดผู้สมัคร (คน)', data: data, backgroundColor: '#4f46e5', borderRadius: 6 }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
-      });
-    }
-
-    // Students
-    async function loadAdStudents() {
-      showLoad(true); const uO = await db.get('users'); showLoad(false);
-      allStudents = uO ? Object.keys(uO).map(k=>({id:k,...uO[k]})).filter(x=>x.role==='student') : [];
-      filterStudents();
-    }
-    function filterStudents() {
-      const q = document.getElementById('ad-search-student').value.toLowerCase();
-      const s = allStudents.filter(x => x.id.includes(q) || (x.firstName+' '+x.lastName).toLowerCase().includes(q));
-      document.getElementById('ad-students-list').innerHTML = s.map(x=>`<tr><td class="p-3 font-bold text-indigo-700 border-b border-slate-100">${x.id}</td><td class="p-3 border-b border-slate-100">${x.prefix||''}${x.firstName} ${x.lastName}</td><td class="p-3 border-b border-slate-100">ชั้น ${x.grade}/${x.room} <span class="bg-slate-100 px-1 rounded text-xs ml-1 font-bold text-slate-500">เลขที่ ${x.rollNumber}</span></td><td class="p-3 border-b border-slate-100 text-right"><button onclick="editStudent('${x.id}')" class="text-xs bg-slate-100 text-slate-700 font-bold px-2 py-1 rounded hover:bg-slate-200 mr-1">แก้ไข</button><button onclick="delStudent('${x.id}')" class="text-xs bg-rose-100 text-rose-700 font-bold px-2 py-1 rounded hover:bg-rose-200">ลบ</button></td></tr>`).join('') || '<tr><td colspan="4" class="p-8 text-center text-slate-500">ไม่พบข้อมูลนักเรียน</td></tr>';
-    }
-    function openStudentModal() {
-      document.getElementById('ms-is-edit').value = 'false'; document.getElementById('ms-old-id').value=''; document.getElementById('ms-id').value='';
-      ['pass','prefix','phone','first','last','grade','room','roll'].forEach(k=>document.getElementById(`ms-${k}`).value='');
-      document.getElementById('ms-warn-edit').classList.add('hidden');
-      document.getElementById('modal-student-title').textContent = 'เพิ่มนักเรียนใหม่'; document.getElementById('modal-student').classList.remove('app-hidden');
-    }
-    function editStudent(id) {
-      const st = allStudents.find(x=>x.id===id); if(!st) return;
-      document.getElementById('ms-is-edit').value = 'true'; document.getElementById('ms-old-id').value=st.id; document.getElementById('ms-id').value=st.id; 
-      document.getElementById('ms-pass').value=st.password; document.getElementById('ms-prefix').value=st.prefix||''; document.getElementById('ms-phone').value=st.phone; document.getElementById('ms-first').value=st.firstName; document.getElementById('ms-last').value=st.lastName; document.getElementById('ms-grade').value=st.grade; document.getElementById('ms-room').value=st.room; document.getElementById('ms-roll').value=st.rollNumber;
-      
-      document.getElementById('ms-warn-edit').classList.remove('hidden');
-      document.getElementById('modal-student-title').textContent = 'แก้ไขข้อมูลนักเรียน'; document.getElementById('modal-student').classList.remove('app-hidden');
-    }
-    async function saveStudent(e) {
-      e.preventDefault(); const id = document.getElementById('ms-id').value; const oldId = document.getElementById('ms-old-id').value; const isEdit = document.getElementById('ms-is-edit').value === 'true';
-      if(!isEdit && await db.get(`users/${id}`)) return sAlert('ไม่สำเร็จ','รหัสนักเรียนนี้มีในระบบแล้ว','error');
-      
-      showLoad(true);
-      const d = { password:document.getElementById('ms-pass').value, prefix:document.getElementById('ms-prefix').value, firstName:document.getElementById('ms-first').value, lastName:document.getElementById('ms-last').value, grade:document.getElementById('ms-grade').value, room:document.getElementById('ms-room').value, rollNumber:document.getElementById('ms-roll').value, phone:document.getElementById('ms-phone').value, role:'student', studentId:id };
-      
-      if(isEdit && oldId !== id) {
-        if(await db.get(`users/${id}`)) { showLoad(false); return sAlert('ไม่สำเร็จ','รหัสใหม่มีในระบบอยู่แล้ว','error'); }
-        await db.put(`users/${id}`, d);
-        await db.del(`users/${oldId}`);
-        const rg = await db.get('registrations');
-        if(rg) {
-          const ups = {};
-          Object.keys(rg).filter(k=>rg[k].studentId===oldId).forEach(k=>{
-            const rData = rg[k]; rData.studentId = id;
-            ups[`${id}_${rData.examId}`] = rData;
-            ups[k] = null;
-          });
-          if(Object.keys(ups).length) await db.patch('registrations', ups);
-        }
-      } else {
-        await db.put(`users/${id}`, d);
-      }
-      
-      closeModal('modal-student'); await loadAdStudents(); showLoad(false); sAlert('สำเร็จ','บันทึกข้อมูลเรียบร้อย','success');
-    }
-    async function delStudent(id) {
-      if(!await sConfirm('ลบข้อมูล','ยืนยันการลบข้อมูลนักเรียนรหัส '+id+' หรือไม่?')) return;
-      showLoad(true); await db.del(`users/${id}`); await loadAdStudents(); showLoad(false);
-    }
-
-    // Exams
-    async function loadAdExams() {
-      showLoad(true); const eO = await db.get('exams'); showLoad(false);
-      allExams = eO ? Object.keys(eO).map(k=>({id:k,...eO[k]})) : [];
-      let h = ''; allExams.forEach(e => {
-        h += `<tr class="hover:bg-slate-50">
-          <td class="p-4 border-b border-slate-100"><strong class="text-slate-800">[${e.code||'-'}] ${e.name}</strong><br><span class="text-slate-500 text-xs">รับชั้น: ${(e.allowedGrades||[]).join(',')}</span></td>
-          <td class="p-4 border-b border-slate-100 text-sm">สอบ: ${formatThaiDate(e.date)}<br><span class="text-slate-400">รับ: ${formatThaiDate(e.regOpenDate)} - ${formatThaiDate(e.regCloseDate)}</span></td>
-          <td class="p-4 border-b border-slate-100 text-center font-black ${((e.enrolledCount||0)>=e.capacity && e.capacity!==999)?'text-rose-600':'text-emerald-600'}">${e.enrolledCount||0} <span class="text-slate-400 text-sm font-bold">/ ${e.capacity===999?'∞':e.capacity}</span></td>
-          <td class="p-4 border-b border-slate-100 text-right space-y-1">
-            <button onclick="exportList('${e.id}')" class="text-xs bg-emerald-100 text-emerald-700 font-bold px-2 py-1 rounded hover:bg-emerald-200 shadow-sm">รายชื่อ</button>
-            <button onclick="editExam('${e.id}')" class="text-xs bg-slate-100 text-slate-700 font-bold px-2 py-1 rounded hover:bg-slate-200 shadow-sm">แก้ไข</button>
-            <button onclick="delExam('${e.id}')" class="text-xs bg-rose-100 text-rose-700 font-bold px-2 py-1 rounded hover:bg-rose-200 shadow-sm">ลบ</button>
-          </td>
-        </tr>`;
-      });
-      document.getElementById('ad-exams-list').innerHTML = h || '<tr><td colspan="4" class="p-8 text-center text-slate-500">ไม่มีข้อมูลวิชาสอบ</td></tr>';
-    }
-
-    async function exportList(examId) {
-      showLoad(true);
-      const [ex, rgO, uO] = await Promise.all([db.get(`exams/${examId}`), db.get('registrations'), db.get('users')]);
-      showLoad(false);
-      const regs = Object.keys(rgO||{}).filter(k=>rgO[k].examId===examId).map(k=>rgO[k]);
-      if(!regs.length) return sAlert('ไม่มีข้อมูล', 'ยังไม่มีผู้สมัครในวิชานี้', 'warning');
-      
-      const data = regs.map((r, idx) => {
-        const st = uO[r.studentId] || {};
-        return {
-          'ลำดับ': idx + 1,
-          'รหัสนักเรียน': r.studentId,
-          'ชื่อ - นามสกุล': `${st.prefix||''}${st.firstName||''} ${st.lastName||''}`,
-          'ชั้น': st.grade || '',
-          'ห้อง': st.room || '',
-          'เลขที่': st.rollNumber || '',
-          'เบอร์โทรศัพท์': st.phone || ''
-        };
-      });
-
-      const swalRes = await Swal.fire({
-        title: 'เลือกรูปแบบไฟล์ดาวน์โหลด',
-        text: `รายชื่อผู้สมัครวิชา [${ex.code||'-'}] ${ex.name}`,
-        icon: 'question',
-        showDenyButton: true,
-        showCancelButton: true,
-        confirmButtonText: 'Excel (.xlsx)',
-        denyButtonText: 'PDF (พิมพ์)',
-        cancelButtonText: 'ยกเลิก',
-        confirmButtonColor: '#10b981',
-        denyButtonColor: '#ef4444'
-      });
-
-      if (swalRes.isConfirmed) {
-        const ws = XLSX.utils.json_to_sheet(data);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "รายชื่อผู้สมัคร");
-        XLSX.writeFile(wb, `รายชื่อ_${ex.name}.xlsx`);
-      } else if (swalRes.isDenied) {
-        let html = `<div class="page-break w-full max-w-[210mm] mx-auto text-black p-4">
-          <div class="text-center mb-6">
-            <h2 class="text-2xl font-bold mb-1">รายชื่อผู้สมัครสอบ</h2>
-            <h3 class="text-xl mb-1">[${ex.code||'-'}] ${ex.name}</h3>
-            <p class="text-sm text-slate-500">พิมพ์เมื่อ: ${formatThaiDate(new Date().toISOString())}</p>
-          </div>
-          <table class="w-full border border-slate-300 text-sm text-left">
-            <thead class="bg-slate-100">
-              <tr class="border-b border-slate-300">
-                <th class="p-2 border-r border-slate-300 text-center">ลำดับ</th>
-                <th class="p-2 border-r border-slate-300 text-center">รหัสนักเรียน</th>
-                <th class="p-2 border-r border-slate-300">ชื่อ - นามสกุล</th>
-                <th class="p-2 border-r border-slate-300 text-center">ชั้น/ห้อง</th>
-                <th class="p-2 border-r border-slate-300 text-center">เลขที่</th>
-                <th class="p-2 text-center">เบอร์โทรศัพท์</th>
-              </tr>
-            </thead>
-            <tbody>`;
-        data.forEach(r => {
-          html += `<tr class="border-b border-slate-300">
-            <td class="p-2 text-center border-r border-slate-300">${r['ลำดับ']}</td>
-            <td class="p-2 text-center border-r border-slate-300">${r['รหัสนักเรียน']}</td>
-            <td class="p-2 border-r border-slate-300">${r['ชื่อ - นามสกุล']}</td>
-            <td class="p-2 text-center border-r border-slate-300">${r['ชั้น']}/${r['ห้อง']}</td>
-            <td class="p-2 text-center border-r border-slate-300">${r['เลขที่']}</td>
-            <td class="p-2 text-center">${r['เบอร์โทรศัพท์']}</td>
-          </tr>`;
-        });
-        html += `</tbody></table></div>`;
-        document.getElementById('print-container').innerHTML = html;
-        window.print();
-      }
-    }
-
-    function renderGrades() {
-      const gs = ['ม.1','ม.2','ม.3','ม.4','ม.5','ม.6'];
-      document.getElementById('ex-grade-container').innerHTML = gs.map(g=>`<label class="inline-flex items-center gap-2 cursor-pointer bg-white px-3 py-1.5 rounded-lg border border-slate-200"><input type="checkbox" value="${g}" class="ex-grade w-4 h-4 text-indigo-600"> <span class="font-bold text-slate-700 text-sm">${g}</span></label>`).join('');
-    }
-
-    function openExamModal() {
-      renderGrades(); document.getElementById('ex-id').value=''; document.getElementById('ex-code').value=''; document.getElementById('ex-name').value=''; document.getElementById('ex-date').value=''; document.getElementById('ex-cap').value=''; document.getElementById('ex-start').value=''; document.getElementById('ex-end').value=''; document.getElementById('ex-reg-open').value=''; document.getElementById('ex-reg-close').value='';
-      document.getElementById('modal-exam-title').textContent = 'เพิ่มวิชาสอบ'; document.getElementById('modal-exam').classList.remove('app-hidden');
-    }
-
-    function editExam(id) {
-      const e = allExams.find(x=>x.id===id); if(!e) return; renderGrades();
-      document.getElementById('ex-id').value=e.id; document.getElementById('ex-code').value=e.code||''; document.getElementById('ex-name').value=e.name; document.getElementById('ex-date').value=e.date; document.getElementById('ex-cap').value=e.capacity; document.getElementById('ex-start').value=e.startTime; document.getElementById('ex-end').value=e.endTime; document.getElementById('ex-reg-open').value=e.regOpenDate; document.getElementById('ex-reg-close').value=e.regCloseDate;
-      document.querySelectorAll('.ex-grade').forEach(cb=>cb.checked=(e.allowedGrades||[]).includes(cb.value));
-      document.getElementById('modal-exam-title').textContent = 'แก้ไขวิชาสอบ'; document.getElementById('modal-exam').classList.remove('app-hidden');
-    }
-
-    async function saveExam(e) {
-      e.preventDefault(); const gs = Array.from(document.querySelectorAll('.ex-grade:checked')).map(cb=>cb.value);
-      if(!gs.length) return sAlert('ข้อผิดพลาด','กรุณาเลือกระดับชั้นอย่างน้อย 1 ระดับ','error');
-      const id = document.getElementById('ex-id').value;
-      const d = { code:document.getElementById('ex-code').value, name:document.getElementById('ex-name').value, date:document.getElementById('ex-date').value, capacity:parseInt(document.getElementById('ex-cap').value), startTime:document.getElementById('ex-start').value, endTime:document.getElementById('ex-end').value, regOpenDate:document.getElementById('ex-reg-open').value, regCloseDate:document.getElementById('ex-reg-close').value, allowedGrades:gs };
-      showLoad(true); if(id) await db.patch(`exams/${id}`,d); else { d.enrolledCount=0; await db.put(`exams/ex_${Date.now()}`,d); }
-      closeModal('modal-exam'); loadAdExams();
-    }
-
-    async function delExam(id) {
-      if(!await sConfirm('ลบวิชาสอบ','ลบถาวร รวมถึงข้อมูลการสมัครของวิชานี้ทั้งหมด?')) return;
-      showLoad(true); await db.del(`exams/${id}`);
-      const rO = await db.get('registrations'); if(rO) { const ups={}; Object.keys(rO).filter(k=>rO[k].examId===id).forEach(k=>ups[k]=null); await db.patch('registrations',ups); }
-      await db.del(`rooms/${id}`); loadAdExams();
-    }
-
-    // Rooms & Seating
-    async function loadAdRooms() {
-      showLoad(true); const [eO, rO] = await Promise.all([db.get('exams'), db.get('registrations')]); showLoad(false);
-      allExams = eO ? Object.keys(eO).map(k=>({id:k,...eO[k]})) : [];
-      let h = '';
-      allExams.sort((a,b)=>a.date.localeCompare(b.date)).forEach(e => {
-        const enrol = e.enrolledCount||0;
-        const eRegs = Object.keys(rO||{}).filter(k=>rO[k].examId===e.id).map(k=>rO[k]);
-        const unassigned = eRegs.filter(x=>!x.roomId || !x.seatNumber).length;
-        h += `<tr class="hover:bg-slate-50">
-          <td class="p-4 border-b border-slate-100"><strong class="text-slate-800">[${e.code||'-'}] ${e.name}</strong></td>
-          <td class="p-4 border-b border-slate-100 text-sm font-medium text-slate-700">${formatThaiDate(e.date)}</td>
-          <td class="p-4 border-b border-slate-100 text-center font-black text-indigo-700">${enrol}</td>
-          <td class="p-4 border-b border-slate-100 text-center font-black ${unassigned>0?'text-rose-600':'text-emerald-600'}">${unassigned}</td>
-          <td class="p-4 border-b border-slate-100 text-right"><button onclick="openManageRooms('${e.id}')" class="bg-indigo-600 text-white font-bold px-4 py-2 rounded-lg shadow-sm hover:bg-indigo-700 transition-colors">จัดการห้องสอบ</button></td>
-        </tr>`;
-      });
-      document.getElementById('ad-rooms-list').innerHTML = h || '<tr><td colspan="5" class="p-8 text-center text-slate-500">ไม่มีข้อมูลวิชาสอบ</td></tr>';
-    }
-
-    async function openManageRooms(id) {
-      currentExamId = id; const e = allExams.find(x=>x.id===id); document.getElementById('room-exam-name').textContent = `วิชา: [${e.code||'-'}] ${e.name}`;
-      document.getElementById('rm-add-name').value=''; document.getElementById('rm-add-cap').value='';
-      showLoad(true); await loadRoomData(); showLoad(false); document.getElementById('modal-rooms').classList.remove('app-hidden');
-    }
-
-    async function loadRoomData() {
-      const [rmO, rgO] = await Promise.all([db.get(`rooms/${currentExamId}`), db.get('registrations')]);
-      roomsCache = rmO ? Object.keys(rmO).map(k=>({id:k,...rmO[k]})) : [];
-      regsCache = Object.keys(rgO||{}).filter(k=>rgO[k].examId===currentExamId).map(k=>({regId:k,...rgO[k]}));
-      
-      const totalEnrolled = regsCache.length;
-      const totalCap = roomsCache.reduce((sum, r)=>sum+(parseInt(r.capacity)||0), 0);
-      const unassigned = regsCache.filter(x=>!x.roomId || !x.seatNumber).length;
-      
-      document.getElementById('rm-total-enrolled').textContent = totalEnrolled;
-      document.getElementById('rm-total-cap').textContent = totalCap;
-      document.getElementById('rm-unassigned').textContent = unassigned;
-
-      let h = ''; roomsCache.forEach(r => {
-        const assigned = regsCache.filter(x=>x.roomId===r.id).length;
-        h += `<tr><td class="p-4 font-bold text-slate-700 border-b border-slate-100">${r.name}</td><td class="p-4 text-center font-bold border-b border-slate-100">${r.capacity}</td><td class="p-4 text-center font-bold text-indigo-600 border-b border-slate-100">${assigned}</td><td class="p-4 text-right border-b border-slate-100"><button onclick="delRoom('${r.id}')" class="text-rose-500 hover:text-rose-700 font-bold bg-rose-50 px-2 py-1 rounded">ลบ</button></td></tr>`;
-      });
-      document.getElementById('rooms-list').innerHTML = h || '<tr><td colspan="4" class="p-8 text-center text-slate-500">ยังไม่มีห้องสอบ</td></tr>';
-    }
-
-    async function addRoom(e) {
-      e.preventDefault(); const n = document.getElementById('rm-add-name').value, c = parseInt(document.getElementById('rm-add-cap').value);
-      showLoad(true); await db.put(`rooms/${currentExamId}/rm_${Date.now()}`,{name:n, capacity:c});
-      document.getElementById('rm-add-name').value=''; document.getElementById('rm-add-cap').value=''; await loadRoomData(); showLoad(false);
-    }
-    
-    async function delRoom(id) {
-      if(!await sConfirm('ลบห้อง','ยืนยันลบห้องสอบนี้? ถ้านักเรียนถูกจัดที่นั่งไว้แล้ว นักเรียนจะสูญเสียที่นั่งนั้น')) return;
-      showLoad(true); await db.del(`rooms/${currentExamId}/${id}`);
-      const ups={}; regsCache.filter(x=>x.roomId===id).forEach(x=>{ups[`${x.regId}/roomId`] = ''; ups[`${x.regId}/seatNumber`] = '';});
-      if(Object.keys(ups).length) await db.patch('registrations', ups);
-      await loadRoomData(); showLoad(false);
-    }
-
-    async function autoAssignSeats() {
-      if(!roomsCache.length) return sAlert('ผิดพลาด','กรุณาสร้างห้องสอบให้เพียงพอก่อนจัดที่นั่ง','error');
-      if(!await sConfirm('จัดที่นั่งอัตโนมัติ','ระบบจะเรียงชื่อ ก-ฮ และจัดลงห้องสอบตามลำดับ (เลขที่นั่งจะนับ 1 ใหม่ทุกห้อง) ข้อมูลที่นั่งเดิมของวิชานี้จะถูกทับทั้งหมด ยืนยันหรือไม่?')) return;
-      
-      showLoad(true);
-      const uO = await db.get('users');
-      let rc = regsCache.map(r=>({...r, ...(uO[r.studentId]||{})}));
-      rc.sort((a,b)=>(a.firstName||'').localeCompare(b.firstName||'','th-TH'));
-      
-      let rmIdx = 0, seatNum = 1, ups = {}, totalAssigned = 0;
-      for(const r of rc) {
-        if(rmIdx >= roomsCache.length) break; 
-        ups[`${r.regId}/roomId`] = roomsCache[rmIdx].id;
-        ups[`${r.regId}/seatNumber`] = seatNum;
-        seatNum++; totalAssigned++;
-        if(seatNum > roomsCache[rmIdx].capacity) { rmIdx++; seatNum = 1; }
-      }
-      if(Object.keys(ups).length) await db.patch('registrations', ups);
-      await loadRoomData(); showLoad(false);
-      
-      if(totalAssigned < rc.length) sAlert('จัดที่นั่งไม่ครบ',`จัดได้ ${totalAssigned} คน จากทั้งหมด ${rc.length} คน (ห้องสอบไม่เพียงพอ)`,'warning');
-      else sAlert('สำเร็จ',`จัดที่นั่งเรียบร้อย ${totalAssigned} คน`,'success');
-    }
-
-    async function printRoster(id) {
-      showLoad(true); const [rO, uO, rmO] = await Promise.all([db.get('registrations'), db.get('users'), db.get(`rooms/${id}`)]); showLoad(false);
-      const rooms = rmO ? Object.keys(rmO).map(k=>({id:k,...rmO[k]})) : [];
-      let regs = Object.keys(rO||{}).filter(k=>rO[k].examId===id).map(k=>({regId:k,...rO[k],...(uO[rO[k].studentId]||{})}));
-      const ex = allExams.find(x=>x.id===id);
-      
-      let html = '';
-      if(!rooms.length) return sAlert('พิมพ์ไม่ได้','วิชานี้ยังไม่มีการสร้างห้องสอบ','error');
-
-      rooms.forEach(rm => {
-        const rmRegs = regs.filter(x=>x.roomId===rm.id).sort((a,b)=>parseInt(a.seatNumber||0)-parseInt(b.seatNumber||0));
-        if(!rmRegs.length) return;
-        
-        let trs = ''; rmRegs.forEach(r => { trs += `<tr class="border-b border-slate-300"><td class="p-2 text-center border-r border-slate-300">${r.seatNumber||'-'}</td><td class="p-2 text-center border-r border-slate-300">${r.studentId}</td><td class="p-2 border-r border-slate-300">${r.prefix||''}${r.firstName} ${r.lastName}</td><td class="p-2 border-r border-slate-300">ชั้น ${r.grade}/${r.room}</td><td class="p-2 border-slate-300"></td></tr>`; });
-
-        html += `
-        <div class="page-break w-full max-w-[210mm] mx-auto text-black p-4">
-          <div class="text-center mb-6">
-            <h2 class="text-2xl font-bold mb-1">ใบลงรายชื่อผู้เข้าสอบ</h2>
-            <h3 class="text-xl mb-1">[${ex.code||'-'}] ${ex.name}</h3>
-            <p class="text-sm">วันที่สอบ: ${formatThaiDate(ex.date)} เวลา: ${ex.startTime} - ${ex.endTime} น.</p>
-            <p class="text-lg font-bold mt-2">ห้องสอบ: ${rm.name}</p>
-          </div>
-          <table class="w-full border border-slate-300 text-sm">
-            <thead class="bg-slate-100"><tr class="border-b border-slate-300"><th class="p-2 border-r border-slate-300 w-16 text-center">ที่นั่ง</th><th class="p-2 border-r border-slate-300 w-24 text-center">รหัส</th><th class="p-2 border-r border-slate-300 text-left">ชื่อ - สกุล</th><th class="p-2 border-r border-slate-300 w-24 text-left">ระดับชั้น</th><th class="p-2 w-32 text-center">ลายมือชื่อ</th></tr></thead>
-            <tbody>${trs}</tbody>
-          </table>
-        </div>`;
-      });
-      document.getElementById('print-container').innerHTML = html;
-      window.print();
-    }
-
-    // SCORES (CSV Upload / ad-scores)
-    async function loadAdScoresMenu() {
-      showLoad(true); const eO = await db.get('exams'); showLoad(false);
-      allExams = eO ? Object.keys(eO).map(k=>({id:k,...eO[k]})) : [];
-      document.getElementById('as-search').value = '';
-      document.getElementById('as-workspace').classList.add('hidden');
-    }
-    
-    function searchScoreExam() {
-      const q = document.getElementById('as-search').value.toLowerCase();
-      const dd = document.getElementById('as-dropdown');
-      if(!q) { dd.classList.add('hidden'); return; }
-      
-      const filtered = allExams.filter(x => (x.code||'').toLowerCase().includes(q) || x.name.toLowerCase().includes(q));
-      let h = '';
-      filtered.forEach(e => {
-        h += `<div class="p-3 border-b border-slate-100 hover:bg-slate-50 cursor-pointer" onclick="selectScoreExam('${e.id}')">
-          <div class="font-bold text-indigo-700">[${e.code||'-'}] ${e.name}</div><div class="text-xs text-slate-500">สอบวันที่: ${formatThaiDate(e.date)}</div>
-        </div>`;
-      });
-      dd.innerHTML = h || '<div class="p-4 text-center text-slate-500">ไม่พบวิชาสอบ</div>';
-      dd.classList.remove('hidden');
-    }
-    
-    async function selectScoreExam(id) {
-      document.getElementById('as-dropdown').classList.add('hidden');
-      document.getElementById('as-search').value = '';
-      currentExamId = id; const ex = allExams.find(x=>x.id===id);
-      document.getElementById('as-exam-name').textContent = `[${ex.code||'-'}] ${ex.name}`;
-      document.getElementById('as-full-score').value = ex.fullScore || '';
-      
-      showLoad(true); const [rO, uO, rmO] = await Promise.all([db.get('registrations'), db.get('users'), db.get(`rooms/${id}`)]); showLoad(false);
-      const rooms = rmO ? Object.keys(rmO).map(k=>({id:k,...rmO[k]})) : [];
-      regsCache = Object.keys(rO||{}).filter(k=>rO[k].examId===id).map(k=>({regId:k,...rO[k],...(uO[rO[k].studentId]||{})}));
-      regsCache.sort((a,b)=>(a.firstName||'').localeCompare(b.firstName||'','th-TH'));
-      
-      let h=''; regsCache.forEach(r => {
-        const rm = rooms.find(x=>x.id===r.roomId);
-        h += `<tr class="hover:bg-slate-50"><td class="p-3 border-b border-slate-100"><strong class="text-slate-800">${r.studentId}</strong><br><span class="text-sm">${r.prefix||''}${r.firstName} ${r.lastName}</span></td><td class="p-3 border-b border-slate-100"><div class="text-indigo-700 font-bold">${rm?rm.name:'-'}</div><div class="text-xs">ที่นั่ง ${r.seatNumber||'-'}</div></td><td class="p-3 text-center border-b border-slate-100"><input type="checkbox" class="cb-absent w-5 h-5 text-rose-500 rounded focus:ring-rose-500 cursor-pointer" data-id="${r.regId}" ${r.isAbsent?'checked':''}></td><td class="p-3 border-b border-slate-100"><input type="number" class="in-score modern-input !mb-0 w-24 p-2 text-center" data-id="${r.regId}" data-st="${r.studentId}" value="${r.score||''}" ${r.isAbsent?'disabled':''}></td></tr>`;
-      });
-      document.getElementById('as-scores-body').innerHTML = h || '<tr><td colspan="4" class="p-8 text-center text-slate-500">ไม่มีผู้สมัครวิชานี้</td></tr>';
-      document.querySelectorAll('.cb-absent').forEach(cb=>cb.addEventListener('change',e=>{const i=document.querySelector(`.in-score[data-id="${e.target.dataset.id}"]`); if(i){ i.disabled=e.target.checked; if(e.target.checked)i.value=''; }}));
-      
-      document.getElementById('as-workspace').classList.remove('hidden');
-    }
-    
-    function handleCSVUpload(e) {
-      const file = e.target.files[0]; if(!file) return;
-      const ex = allExams.find(x=>x.id===currentExamId);
-      const reader = new FileReader();
-      reader.onload = function(evt) {
-        const lines = evt.target.result.split('\n');
-        const header = lines[0].toLowerCase().trim().split(',');
-        if(header[0]!=='student_id' || header[1]!=='exam_code' || header[2]!=='score') return sAlert('ผิดพลาด', 'หัวข้อคอลัมน์ไม่ถูกต้อง (ต้องเป็น student_id, exam_code, score)', 'error');
-        
-        let successCount=0, errorCount=0;
-        for(let i=1; i<lines.length; i++) {
-          const row = lines[i].trim().split(',');
-          if(row.length < 3) continue;
-          const stId = row[0].trim(), ec = row[1].trim(), sc = row[2].trim();
-          
-          if(ec !== (ex.code||'')) { errorCount++; continue; } // Wrong exam
-          
-          const inScore = document.querySelector(`.in-score[data-st="${stId}"]`);
-          if(inScore) { inScore.value = sc; successCount++; }
-        }
-        sAlert('อัปโหลดเสร็จสิ้น', `อัปโหลดคะแนนลงตารางสำเร็จ ${successCount} รายการ (ข้าม ${errorCount} รายการที่ไม่ตรงเงื่อนไข)\n*กรุณากด "บันทึกคะแนน" อีกครั้งเพื่อเซฟลงระบบ*`, 'success');
-        e.target.value = ''; // reset file input
-      };
-      reader.readAsText(file);
-    }
-    
-    async function saveResultsDirectly() {
-      if(!await sConfirm('ยืนยัน','คุณต้องการบันทึกคะแนนทั้งหมดเข้าสู่ระบบใช่หรือไม่?')) return;
-      const fs = document.getElementById('as-full-score').value;
-      const ups = {}; 
-      regsCache.forEach(r=>{ 
-        const a=document.querySelector(`.cb-absent[data-id="${r.regId}"]`).checked;
-        const s=document.querySelector(`.in-score[data-id="${r.regId}"]`).value; 
-        ups[`${r.regId}/isAbsent`]=a; ups[`${r.regId}/score`]=a?"":s; 
-      });
-      showLoad(true); 
-      await db.patch('registrations', ups);
-      if(fs) {
-        await db.patch(`exams/${currentExamId}`, { fullScore: parseFloat(fs) });
-        // Update allExams cache locally too
-        const exIdx = allExams.findIndex(x=>x.id===currentExamId);
-        if(exIdx>=0) allExams[exIdx].fullScore = parseFloat(fs);
-      }
-      showLoad(false); sAlert('สำเร็จ','บันทึกผลเรียบร้อย','success');
-    }
-
-    // SUBJECT SCORES
-    async function loadAdSubjScoresMenu() {
-      showLoad(true); const eO = await db.get('exams'); showLoad(false);
-      allExams = eO ? Object.keys(eO).map(k=>({id:k,...eO[k]})) : [];
-      document.getElementById('ass-search').value = '';
-      document.getElementById('ass-workspace').classList.add('hidden');
-    }
-    
-    function searchSubjScoreExam() {
-      const q = document.getElementById('ass-search').value.toLowerCase();
-      const dd = document.getElementById('ass-dropdown');
-      if(!q) { dd.classList.add('hidden'); return; }
-      
-      const filtered = allExams.filter(x => (x.code||'').toLowerCase().includes(q) || x.name.toLowerCase().includes(q));
-      let h = '';
-      filtered.forEach(e => {
-        h += `<div class="p-3 border-b border-slate-100 hover:bg-slate-50 cursor-pointer" onclick="selectSubjScoreExam('${e.id}')">
-          <div class="font-bold text-indigo-700">[${e.code||'-'}] ${e.name}</div><div class="text-xs text-slate-500">สอบวันที่: ${formatThaiDate(e.date)}</div>
-        </div>`;
-      });
-      dd.innerHTML = h || '<div class="p-4 text-center text-slate-500">ไม่พบวิชาสอบ</div>';
-      dd.classList.remove('hidden');
-    }
-    
-    async function selectSubjScoreExam(id) {
-      document.getElementById('ass-dropdown').classList.add('hidden');
-      document.getElementById('ass-search').value = '';
-      currentExamId = id; const ex = allExams.find(x=>x.id===id);
-      document.getElementById('ass-exam-name').textContent = `[${ex.code||'-'}] ${ex.name}`;
-      
-      showLoad(true); const [rO, uO] = await Promise.all([db.get('registrations'), db.get('users')]); showLoad(false);
-      const allRegs = Object.keys(rO||{}).map(k=>({regId:k,...rO[k]}));
-      const myRegs = allRegs.filter(r=>r.examId===id).map(r=>({...r, ...(uO[r.studentId]||{})}));
-      myRegs.sort((a,b)=>(a.firstName||'').localeCompare(b.firstName||'','th-TH'));
-      
-      const st = getExamStats(id, allRegs);
-      
-      document.getElementById('ass-stats').innerHTML = st ? `<span class="font-bold text-emerald-600">Mean: ${st.mean.toFixed(2)}</span> | <span class="font-bold text-indigo-600">SD: ${st.sd.toFixed(2)}</span> | <span class="font-bold text-slate-600">ผู้เข้าสอบ: ${st.scores.length} คน</span>` : 'ไม่มีข้อมูลสถิติ (รอลงคะแนน)';
-
-      let h=''; myRegs.forEach(r => {
-        let scText, tsText='-', prText='-', mdBadge='-';
-        
-        if (r.isAbsent || !r.score || r.score.trim() === '') {
-          scText = '<span class="text-rose-500 font-bold bg-rose-50 px-2 py-1 rounded text-xs">ขาดสอบ</span>';
-        } else {
-          const sc = parseFloat(r.score);
-          scText = `<span class="font-black text-emerald-600">${sc}</span>`;
-          if (st) {
-            tsText = getTScore(sc, st.mean, st.sd);
-            prText = getPercentileRank(sc, st.scores);
-            const md = getMedal(prText);
-            mdBadge = md ? `<span class="${md.color} ${md.bg} px-2 py-1 rounded text-xs font-bold whitespace-nowrap">🥇 ${md.name}</span>` : '-';
-          }
-        }
-        
-        h += `<tr class="hover:bg-slate-50"><td class="p-3 border-b border-slate-100"><strong class="text-slate-800">${r.studentId}</strong><br><span class="text-sm">${r.prefix||''}${r.firstName} ${r.lastName}</span></td><td class="p-3 text-center border-b border-slate-100">${scText}</td><td class="p-3 border-b border-slate-100 text-center font-bold text-slate-600">${tsText}</td><td class="p-3 border-b border-slate-100 text-center font-bold text-slate-600">${prText}</td><td class="p-3 border-b border-slate-100 text-center">${mdBadge}</td></tr>`;
-      });
-      document.getElementById('ass-scores-body').innerHTML = h || '<tr><td colspan="5" class="p-8 text-center text-slate-500">ไม่มีผู้สมัครวิชานี้</td></tr>';
-      document.getElementById('ass-workspace').classList.remove('hidden');
-    }
-
-    // Announcements
-    async function loadAdAnnounce() {
-      showLoad(true); const an = await db.get('announcement'); showLoad(false);
-      document.getElementById('ad-ann-text').value = an ? an.text : '';
-    }
-    async function saveAnnouncement(e) {
-      e.preventDefault(); showLoad(true); await db.put('announcement', { text: document.getElementById('ad-ann-text').value }); showLoad(false); sAlert('สำเร็จ','บันทึกประกาศเรียบร้อย','success');
-    }
-
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>

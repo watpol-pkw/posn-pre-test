@@ -1,0 +1,55 @@
+@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap');
+    
+    :root { --primary-color: #4f46e5; }
+    body { font-family: 'Prompt', sans-serif; color: #1e293b; background-color: #f8fafc; overflow: hidden; }
+    
+    .glass-card { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.6); box-shadow: 0 10px 40px -10px rgba(0,0,0,0.05); border-radius: 1.5rem; }
+    .glass-blue { background: rgba(238, 242, 255, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(199, 210, 254, 0.5); }
+    
+    .modern-input { width: 100%; padding: 0.875rem 1rem; border: 1px solid #e2e8f0; border-radius: 1rem; background-color: #f8fafc; margin-bottom: 1.25rem; transition: all 0.3s ease; font-family: 'Prompt', sans-serif; }
+    .modern-input:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); background-color: #fff; }
+    .modern-label { display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #475569; }
+    
+    .btn-primary { background: linear-gradient(to right, #4f46e5, #3b82f6); color: white; padding: 0.875rem 1.5rem; border-radius: 1rem; font-weight: 600; text-align: center; width: 100%; cursor: pointer; border: none; transition: all 0.3s ease; box-shadow: 0 4px 15px -3px rgba(79, 70, 229, 0.4); }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px -3px rgba(79, 70, 229, 0.5); }
+    
+    .btn-secondary { background: white; color: #475569; border: 1px solid #cbd5e1; padding: 0.875rem 1.5rem; border-radius: 1rem; font-weight: 600; text-align: center; width: 100%; cursor: pointer; transition: all 0.3s ease; }
+    .btn-secondary:hover { background: #f1f5f9; color: #0f172a; border-color: #94a3b8; }
+    
+    .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+    
+    .loader { border: 4px solid rgba(79, 70, 229, 0.2); border-top: 4px solid #4f46e5; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    .menu-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 1rem; border-radius: 0.5rem; font-weight: 600; color: #93c5fd; transition: all 0.2s; cursor: pointer; border-left: 4px solid transparent; }
+    .menu-item:hover { background-color: rgba(255,255,255,0.1); color: #ffffff; }
+    .menu-item.active { background-color: rgba(255,255,255,0.2); color: #ffffff; border-left-color: #60a5fa; }
+    
+    .app-hidden { display: none !important; }
+    
+    @media (min-width: 1024px) {
+      .desktop-closed { width: 0 !important; overflow: hidden !important; opacity: 0 !important; padding: 0 !important; border: none !important; }
+    }
+
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+    /* Print Styles */
+    @media print { 
+      body { background: white !important; font-family: 'Sarabun', sans-serif !important; font-size: 12pt !important; overflow: visible !important; height: auto !important; } 
+      #sidebar, #topnav, .no-print { display: none !important; } 
+      #main-content { overflow: visible !important; height: auto !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
+      #app { display: none !important; } 
+      .page-break { page-break-after: always; break-after: page; }
+      .print-only { display: block !important; }
+      
+      /* Enforce table headers to repeat on every page */
+      table { page-break-inside: auto; width: 100%; border-collapse: collapse; }
+      tr { page-break-inside: avoid; page-break-after: auto; }
+      thead { display: table-header-group; }
+      tfoot { display: table-footer-group; }
+    }
+    .print-only { display: none; }
