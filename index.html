@@ -144,7 +144,7 @@
   <!-- Templates -->
   <div id="templates" class="app-hidden">
     
-    <!-- LOGIN VIEW (V1.5.3) -->
+    <!-- LOGIN VIEW (V1.5.4) -->
     <div id="view-login" class="fade-in max-w-5xl mx-auto mt-2 md:mt-4 flex flex-col md:flex-row h-full md:h-auto glass-card overflow-hidden shadow-2xl transition-all duration-300">
       <!-- Left Side -->
       <div class="md:w-1/2 p-4 md:p-6 bg-gradient-to-br from-blue-700 via-indigo-600 to-teal-500 flex flex-col justify-center relative text-white">
@@ -213,7 +213,7 @@
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><title>ภาษาศาสตร์</title><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path></svg>
           </div>
           <div class="text-slate-400 text-[10px] font-medium leading-relaxed mt-3">
-            <p class="font-bold text-slate-500 mb-0.5">©2026 PKW POSN PRE-TEST V1.5.3</p>
+            <p class="font-bold text-slate-500 mb-0.5">©2026 PKW POSN PRE-TEST V1.5.4</p>
             <p>พัฒนาโดย นายจักรวิทย์ อรรฆกานต์ ณ ตะกั่วทุ่ง</p>
           </div>
         </div>
@@ -296,7 +296,7 @@
       <div id="tickets-list" class="grid grid-cols-1 lg:grid-cols-2 gap-6"></div>
     </div>
 
-    <!-- SD-RESULTS (V1.5.3) -->
+    <!-- SD-RESULTS (V1.5.4) -->
     <div id="view-sd-results" class="fade-in">
       <h2 class="text-3xl font-black text-slate-800 mb-2">ผลการสอบ</h2>
       <p class="text-slate-500 mb-6 font-medium">ประวัติการสอบและคะแนนที่ได้แบบละเอียด</p>
@@ -319,7 +319,7 @@
       </div>
     </div>
 
-    <!-- SD-PROFILE (V1.5.3) -->
+    <!-- SD-PROFILE (V1.5.4) -->
     <div id="view-sd-profile" class="fade-in max-w-2xl">
       <h2 class="text-3xl font-black text-slate-800 mb-6">แก้ไขข้อมูลส่วนตัว</h2>
       <div class="glass-card p-8 border border-slate-200">
@@ -471,7 +471,7 @@
       </div>
     </div>
 
-    <!-- AD-SCORES (V1.5.3) -->
+    <!-- AD-SCORES (V1.5.4) -->
     <div id="view-ad-scores" class="fade-in">
       <h2 class="text-3xl font-black text-slate-800 mb-6">บันทึกคะแนน</h2>
       
@@ -487,9 +487,13 @@
         <div class="glass-card p-6 border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 relative z-10 bg-indigo-50/50">
           <div>
             <h3 class="text-xl font-bold text-indigo-900" id="as-exam-name">-</h3>
-            <p class="text-slate-500 text-sm mt-1">อัปโหลดไฟล์ CSV เพื่อบันทึกคะแนนรวดเร็ว (Format: <code class="bg-white px-1 rounded border border-slate-200 text-rose-500">student_id,score,exam_code</code>)</p>
+            <p class="text-slate-500 text-sm mt-1">อัปโหลดไฟล์ CSV เพื่อบันทึกคะแนนรวดเร็ว (Format: <code class="bg-white px-1 rounded border border-slate-200 text-rose-500">student_id,exam_code,score</code>)</p>
           </div>
-          <div class="flex gap-2">
+          <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 mr-2">
+              <label class="text-sm font-bold text-slate-700 whitespace-nowrap">คะแนนเต็ม:</label>
+              <input type="number" id="as-full-score" class="modern-input !mb-0 w-24 p-2 text-center shadow-sm" placeholder="เช่น 100">
+            </div>
             <input type="file" id="as-csv-file" accept=".csv" class="hidden" onchange="handleCSVUpload(event)">
             <button onclick="document.getElementById('as-csv-file').click()" class="bg-white border border-indigo-200 text-indigo-700 font-bold px-4 py-2 rounded-lg shadow-sm hover:bg-indigo-50 flex items-center gap-2 transition-colors">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg> อัปโหลด CSV
@@ -511,7 +515,7 @@
       </div>
     </div>
 
-    <!-- AD-SUBJ-SCORES (V1.5.3) -->
+    <!-- AD-SUBJ-SCORES (V1.5.4) -->
     <div id="view-ad-subj-scores" class="fade-in">
       <h2 class="text-3xl font-black text-slate-800 mb-6">คะแนนรายวิชา</h2>
       
@@ -916,8 +920,25 @@
 
     async function regExam(id) {
       if(!await sConfirm('ยืนยันสมัครสอบ','คุณต้องการสมัครสอบวิชานี้ใช่หรือไม่?')) return;
-      showLoad(true); const ex = await db.get(`exams/${id}`);
+      showLoad(true); 
+      const ex = await db.get(`exams/${id}`);
       if(ex.capacity !== 999 && (ex.enrolledCount||0)>=ex.capacity) { showLoad(false); return sAlert('ไม่สำเร็จ','ที่นั่งเต็มแล้ว','error'); }
+      
+      const rO = await db.get('registrations');
+      const myRegs = Object.keys(rO||{}).map(k=>rO[k]).filter(r=>r.studentId===u.studentId);
+      const eO = await db.get('exams');
+      const allEx = eO ? Object.keys(eO).map(k=>({id:k,...eO[k]})) : [];
+      
+      for(const r of myRegs) {
+        const oEx = allEx.find(x=>x.id===r.examId);
+        if(oEx && oEx.date === ex.date) {
+          if(oEx.startTime < ex.endTime && oEx.endTime > ex.startTime) {
+            showLoad(false); 
+            return sAlert('ไม่สามารถสมัครได้', `เวลาสอบชนกับวิชา [${oEx.code||'-'}] ${oEx.name}`, 'error');
+          }
+        }
+      }
+
       await db.put(`registrations/${u.studentId}_${id}`, { studentId:u.studentId, examId:id, timestamp:new Date().toISOString(), roomId:'', seatNumber:'', score:'', isAbsent:false });
       await db.patch(`exams/${id}`, { enrolledCount:(ex.enrolledCount||0)+1 });
       showLoad(false); sAlert('สำเร็จ','สมัครสอบเรียบร้อยแล้ว','success'); initView('enroll');
@@ -1464,6 +1485,7 @@
       document.getElementById('as-search').value = '';
       currentExamId = id; const ex = allExams.find(x=>x.id===id);
       document.getElementById('as-exam-name').textContent = `[${ex.code||'-'}] ${ex.name}`;
+      document.getElementById('as-full-score').value = ex.fullScore || '';
       
       showLoad(true); const [rO, uO, rmO] = await Promise.all([db.get('registrations'), db.get('users'), db.get(`rooms/${id}`)]); showLoad(false);
       const rooms = rmO ? Object.keys(rmO).map(k=>({id:k,...rmO[k]})) : [];
@@ -1487,13 +1509,13 @@
       reader.onload = function(evt) {
         const lines = evt.target.result.split('\n');
         const header = lines[0].toLowerCase().trim().split(',');
-        if(header[0]!=='student_id' || header[1]!=='score' || header[2]!=='exam_code') return sAlert('ผิดพลาด', 'หัวข้อคอลัมน์ไม่ถูกต้อง (ต้องเป็น student_id, score, exam_code)', 'error');
+        if(header[0]!=='student_id' || header[1]!=='exam_code' || header[2]!=='score') return sAlert('ผิดพลาด', 'หัวข้อคอลัมน์ไม่ถูกต้อง (ต้องเป็น student_id, exam_code, score)', 'error');
         
         let successCount=0, errorCount=0;
         for(let i=1; i<lines.length; i++) {
           const row = lines[i].trim().split(',');
           if(row.length < 3) continue;
-          const stId = row[0].trim(), sc = row[1].trim(), ec = row[2].trim();
+          const stId = row[0].trim(), ec = row[1].trim(), sc = row[2].trim();
           
           if(ec !== (ex.code||'')) { errorCount++; continue; } // Wrong exam
           
@@ -1508,13 +1530,22 @@
     
     async function saveResultsDirectly() {
       if(!await sConfirm('ยืนยัน','คุณต้องการบันทึกคะแนนทั้งหมดเข้าสู่ระบบใช่หรือไม่?')) return;
+      const fs = document.getElementById('as-full-score').value;
       const ups = {}; 
       regsCache.forEach(r=>{ 
         const a=document.querySelector(`.cb-absent[data-id="${r.regId}"]`).checked;
         const s=document.querySelector(`.in-score[data-id="${r.regId}"]`).value; 
         ups[`${r.regId}/isAbsent`]=a; ups[`${r.regId}/score`]=a?"":s; 
       });
-      showLoad(true); await db.patch('registrations', ups); showLoad(false); sAlert('สำเร็จ','บันทึกผลเรียบร้อย','success');
+      showLoad(true); 
+      await db.patch('registrations', ups);
+      if(fs) {
+        await db.patch(`exams/${currentExamId}`, { fullScore: parseFloat(fs) });
+        // Update allExams cache locally too
+        const exIdx = allExams.findIndex(x=>x.id===currentExamId);
+        if(exIdx>=0) allExams[exIdx].fullScore = parseFloat(fs);
+      }
+      showLoad(false); sAlert('สำเร็จ','บันทึกผลเรียบร้อย','success');
     }
 
     // SUBJECT SCORES
