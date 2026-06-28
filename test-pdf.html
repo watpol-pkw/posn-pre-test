@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+  <script>
+    setTimeout(() => {
+      try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        if (typeof doc.autoTable === 'function') {
+          console.log("SUCCESS: autoTable is a function");
+        } else {
+          console.log("ERROR: autoTable is not a function");
+        }
+      } catch (e) {
+        console.log("CATCH ERROR:", e.message);
+      }
+    }, 1000);
+  </script>
+</body>
+</html>
