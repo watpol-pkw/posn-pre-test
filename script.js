@@ -131,6 +131,7 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
           if(!isMgr) addItem('ad-scores', `<svg class="${iconClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>`, 'บันทึกคะแนน', 'ad-scores');
           addItem('ad-subj-scores', `<svg class="${iconClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 14l9-5-9-5-9 5 9 5z"></path><path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"></path></svg>`, 'คะแนนรายวิชา', 'ad-subj-scores');
           addItem('ad-indiv-scores', `<svg class="${iconClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4"></path></svg>`, 'คะแนนรายบุคคล', 'ad-indiv-scores');
+          addItem('ad-certs', `<svg class="${iconClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>`, 'จัดการเกียรติบัตร', 'ad-certs');
           addItem('ad-reports', `<svg class="${iconClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>`, 'รายงานผล', 'ad-reports');
           if(!isMgr) addItem('ad-announce', `<svg class="${iconClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path></svg>`, 'แจ้งประกาศ', 'ad-announce');
         }
@@ -152,6 +153,7 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
       else if(id==='ad-indiv-scores') loadAdIndivScoresMenu();
       else if(id==='ad-announce') loadAdAnnounce();
       else if(id==='ad-reports') loadAdReports();
+      else if(id==='ad-certs') loadAdCerts();
     }
 
     // Force init roles in DB if not exist (fixes Manager/Executive login issue)
@@ -368,11 +370,15 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
     function getTScore(score, mean, sd) {
       return (50 + 10 * ((score - mean) / sd)).toFixed(2);
     }
-    function getMedal(pr) {
+    function getMedal(pr, cond) {
       const p = parseFloat(pr);
-      if(p >= 95) return { name: 'เหรียญทอง', color: 'text-amber-500', bg: 'bg-amber-50' };
-      if(p >= 85) return { name: 'เหรียญเงิน', color: 'text-slate-500', bg: 'bg-slate-100' };
-      if(p >= 70) return { name: 'เหรียญทองแดง', color: 'text-orange-700', bg: 'bg-orange-50' };
+      if(isNaN(p)) return null;
+      const g = cond?.gold || 80;
+      const s = cond?.silver || 60;
+      const b = cond?.bronze || 40;
+      if(p >= g) return { name: 'เหรียญทอง', color: 'text-amber-500', bg: 'bg-amber-50' };
+      if(p >= s) return { name: 'เหรียญเงิน', color: 'text-slate-500', bg: 'bg-slate-100' };
+      if(p >= b) return { name: 'เหรียญทองแดง', color: 'text-orange-700', bg: 'bg-orange-50' };
       return null;
     }
 
@@ -382,6 +388,7 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
       let h = ''; validRegs.forEach(r => {
         const ex = d.exams.find(x=>x.id===r.examId);
         const st = getExamStats(ex.id, d.allRegsList);
+        const cert = d.certificates[ex.id];
         
         if(r.isAbsent) {
           h += `<tr><td class="p-4 border-b border-slate-100"><strong class="text-slate-800">[${ex.code||'-'}] ${ex.name}</strong></td><td colspan="5" class="p-4 border-b border-slate-100 text-center"><span class="text-rose-500 font-bold bg-rose-50 px-3 py-1.5 rounded-lg border border-rose-200">ขาดสอบ</span></td></tr>`;
@@ -391,7 +398,7 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
           const sc = parseFloat(r.score);
           const ts = getTScore(sc, st.mean, st.sd);
           const pr = getPercentileRank(sc, st.scores);
-          const md = getMedal(pr);
+          const md = getMedal(pr, cert?.conditions);
           const mdBadge = md ? `<span class="${md.color} ${md.bg} px-2 py-1 rounded text-xs font-bold border border-current whitespace-nowrap">🥇 ${md.name}</span>` : '<span class="text-slate-400 text-xs">-</span>';
           
           h += `<tr class="hover:bg-slate-50">
@@ -402,8 +409,8 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
             <td class="p-4 border-b border-slate-100 text-center">${mdBadge}</td>
             <td class="p-4 border-b border-slate-100 text-center">
               <div class="flex items-center justify-center gap-2">
-                <button onclick="showScorePopup('${ex.name}', ${sc}, ${ts}, ${pr}, '${md?md.name:''}')" class="bg-indigo-100 text-indigo-700 p-2 rounded-lg hover:bg-indigo-200 transition-colors" title="ดูรายละเอียดคะแนน"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg></button>
-                ${md ? `<button onclick="downloadCert('${ex.name}', '${md.name}')" class="bg-amber-100 text-amber-700 p-2 rounded-lg hover:bg-amber-200 transition-colors font-bold text-sm flex items-center gap-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path></svg> เกียรติบัตร</button>` : ''}
+                <button onclick="showScorePopup('${ex.name}', ${sc}, ${ts}, ${pr}, '${md?md.name:''}')" class="bg-indigo-100 text-indigo-700 p-2 rounded-lg hover:bg-indigo-200 transition-colors shadow-sm" title="ดูรายละเอียดคะแนน"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg></button>
+                ${(md && cert && cert.isPublished) ? `<button onclick="downloadCert('${ex.id}', '${ex.name}', '${md.name}')" class="bg-amber-100 text-amber-700 p-2 rounded-lg hover:bg-amber-200 transition-colors font-bold text-sm flex items-center gap-1 shadow-sm"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path></svg> เกียรติบัตร</button>` : ''}
               </div>
             </td>
           </tr>`;
@@ -415,23 +422,67 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
     function showScorePopup(name, sc, ts, pr, md) {
       let html = `
         <div class="text-left mt-4">
-          <div class="bg-indigo-50 border border-indigo-100 p-4 rounded-xl mb-4 text-center">
+          <div class="bg-indigo-50 border border-indigo-100 p-4 rounded-xl mb-4 text-center shadow-inner">
             <div class="text-slate-500 text-sm font-bold uppercase tracking-widest mb-1">คะแนนดิบ</div>
             <div class="text-5xl font-black text-indigo-700">${sc}</div>
           </div>
           <div class="grid grid-cols-2 gap-4 mb-4">
-            <div class="bg-slate-50 border border-slate-200 p-3 rounded-xl text-center"><div class="text-slate-500 text-xs font-bold uppercase mb-1">T-Score</div><div class="text-xl font-bold text-slate-700">${ts}</div></div>
-            <div class="bg-slate-50 border border-slate-200 p-3 rounded-xl text-center"><div class="text-slate-500 text-xs font-bold uppercase mb-1">Percentile</div><div class="text-xl font-bold text-slate-700">PR ${pr}</div></div>
+            <div class="bg-slate-50 border border-slate-200 p-3 rounded-xl text-center shadow-sm"><div class="text-slate-500 text-xs font-bold uppercase mb-1">T-Score</div><div class="text-xl font-bold text-slate-700">${ts}</div></div>
+            <div class="bg-slate-50 border border-slate-200 p-3 rounded-xl text-center shadow-sm"><div class="text-slate-500 text-xs font-bold uppercase mb-1">Percentile</div><div class="text-xl font-bold text-slate-700">PR ${pr}</div></div>
           </div>
-          ${md ? `<div class="bg-amber-50 border border-amber-200 p-3 rounded-xl text-center"><div class="text-amber-600 text-xs font-bold uppercase mb-1">ระดับรางวัลเกียรติบัตร</div><div class="text-2xl font-black text-amber-500">🥇 ${md}</div></div>` : ''}
+          ${md ? `<div class="bg-amber-50 border border-amber-200 p-3 rounded-xl text-center shadow-sm"><div class="text-amber-600 text-xs font-bold uppercase mb-1">ระดับรางวัลเกียรติบัตร</div><div class="text-2xl font-black text-amber-500">🥇 ${md}</div></div>` : ''}
         </div>
       `;
       Swal.fire({ title: name, html: html, confirmButtonText: 'ปิด', confirmButtonColor: '#4f46e5', width: 400 });
     }
 
-    function downloadCert(exName, mdName) {
-      // Future feature structure
-      sAlert('ฟีเจอร์ดาวน์โหลดเกียรติบัตร', `ดาวน์โหลดเกียรติบัตร ${mdName} สำหรับวิชา ${exName} (จะพร้อมใช้งานเร็วๆ นี้)`, 'info');
+    async function downloadCert(examId, exName, mdName) {
+      showLoad(true);
+      try {
+        const ct = await db.get(`certificates/${examId}`);
+        if(!ct || !ct.isPublished) throw new Error('ยังไม่เผยแพร่');
+        
+        const fullName = `${u.prefix||''}${u.firstName} ${u.lastName}`.trim();
+        const cvs = document.createElement('canvas');
+        cvs.width = ct.w || 1191;
+        cvs.height = ct.h || 1684;
+        const ctx = cvs.getContext('2d');
+        
+        if (ct.bgBase64) {
+          const img = new Image();
+          img.src = ct.bgBase64;
+          await new Promise(res => { img.onload = res; img.onerror = res; });
+          ctx.drawImage(img, 0, 0, cvs.width, cvs.height);
+        } else {
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0,0,cvs.width, cvs.height);
+        }
+        
+        (ct.fields || []).forEach(f => {
+          let txt = f.text;
+          txt = txt.replace(/\\[Name\\]/g, fullName);
+          txt = txt.replace(/\\[Award\\]/g, mdName);
+          
+          ctx.font = `${f.bold?'bold ':''}${f.size}px "${f.font}", sans-serif`;
+          ctx.fillStyle = f.color;
+          ctx.textAlign = f.align;
+          ctx.textBaseline = 'middle';
+          ctx.fillText(txt, f.x, f.y);
+        });
+        
+        const imgData = cvs.toDataURL('image/jpeg', 1.0);
+        
+        // Export to PDF
+        const { jsPDF } = window.jspdf;
+        const orient = cvs.width > cvs.height ? 'l' : 'p';
+        const doc = new jsPDF(orient, 'px', [cvs.width, cvs.height]);
+        doc.addImage(imgData, 'JPEG', 0, 0, cvs.width, cvs.height);
+        doc.save(`เกียรติบัตร_${exName}_${fullName}.pdf`);
+        
+      } catch (err) {
+        sAlert('ผิดพลาด', 'ไม่สามารถสร้างเกียรติบัตรได้ ' + err.message, 'error');
+      }
+      showLoad(false);
     }
 
     // Profile Edit
@@ -576,7 +627,7 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
       const [ex, rgO, uO, rmO] = await Promise.all([db.get(`exams/${examId}`), db.get('registrations'), db.get('users'), db.get(`rooms/${examId}`)]);
       showLoad(false);
       
-      const regs = Object.keys(rgO||{}).filter(k=>rgO[k].examId===examId).map(k=>rgO[k]);
+      const regs = Object.keys(rgO||{}).filter(k=>rgO[k].examId===examId).map(k=>({ ...rgO[k], regKey: k }));
       if(!regs.length) return sAlert('ไม่มีข้อมูล', 'ยังไม่มีผู้สมัครในวิชานี้', 'warning');
       
       let students = regs.map(r => {
@@ -586,8 +637,8 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
 
       // Sort by Grade -> Room -> RollNumber
       students.sort((a,b) => {
-        if(a.grade !== b.grade) return (a.grade||'').localeCompare(b.grade||'');
-        if(a.room !== b.room) return (a.room||'').localeCompare(b.room||'');
+        if(a.grade !== b.grade) return (String(a.grade||'')).localeCompare(String(b.grade||''), undefined, {numeric: true});
+        if(a.room !== b.room) return (String(a.room||'')).localeCompare(String(b.room||''), undefined, {numeric: true});
         return parseInt(a.rollNumber||0) - parseInt(b.rollNumber||0);
       });
       
@@ -597,17 +648,21 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
       document.getElementById('mel-title').textContent = isRoomMode ? 'รายชื่อผู้เข้าสอบและเซ็นชื่อ' : 'รายชื่อนักเรียนที่สมัครสอบ';
       document.getElementById('mel-subtitle').textContent = `วิชา: [${ex.code||'-'}] ${ex.name}`;
       
+      const canManage = (u.role === 'admin' || u.role === 'manager');
+      const manageTh = canManage ? '<th class="p-4 font-semibold text-center text-slate-700">จัดการ</th>' : '';
+      
       let th = isRoomMode 
-        ? '<th class="p-4 font-semibold text-slate-700">ลำดับ</th><th class="p-4 font-semibold text-slate-700">รหัส</th><th class="p-4 font-semibold text-slate-700">ชื่อ-สกุล</th><th class="p-4 font-semibold text-slate-700">ห้องสอบ</th><th class="p-4 font-semibold text-center text-slate-700">ชั้น</th><th class="p-4 font-semibold text-center text-slate-700">ห้อง</th><th class="p-4 font-semibold text-center text-slate-700">เลขที่</th>'
-        : '<th class="p-4 font-semibold text-slate-700">ลำดับ</th><th class="p-4 font-semibold text-slate-700">รหัส</th><th class="p-4 font-semibold text-slate-700">ชื่อ-สกุล</th><th class="p-4 font-semibold text-center text-slate-700">ชั้น</th><th class="p-4 font-semibold text-center text-slate-700">ห้อง</th><th class="p-4 font-semibold text-center text-slate-700">เลขที่</th><th class="p-4 font-semibold text-slate-700">หมายเหตุ</th>';
+        ? `<th class="p-4 font-semibold text-slate-700">ลำดับ</th><th class="p-4 font-semibold text-slate-700">รหัส</th><th class="p-4 font-semibold text-slate-700">ชื่อ-สกุล</th><th class="p-4 font-semibold text-slate-700">ห้องสอบ</th><th class="p-4 font-semibold text-center text-slate-700">ชั้น</th><th class="p-4 font-semibold text-center text-slate-700">ห้อง</th><th class="p-4 font-semibold text-center text-slate-700">เลขที่</th>${manageTh}`
+        : `<th class="p-4 font-semibold text-slate-700">ลำดับ</th><th class="p-4 font-semibold text-slate-700">รหัส</th><th class="p-4 font-semibold text-slate-700">ชื่อ-สกุล</th><th class="p-4 font-semibold text-center text-slate-700">ชั้น</th><th class="p-4 font-semibold text-center text-slate-700">ห้อง</th><th class="p-4 font-semibold text-center text-slate-700">เลขที่</th><th class="p-4 font-semibold text-slate-700">หมายเหตุ</th>${manageTh}`;
       document.getElementById('mel-thead').innerHTML = `<tr class="bg-slate-100 border-b border-slate-200">${th}</tr>`;
       
       let tb = '';
       students.forEach((s, idx) => {
         const rmName = s.roomId && rmO && rmO[s.roomId] ? rmO[s.roomId].name : '-';
+        const manageBtn = canManage ? `<td class="p-4 text-center"><button onclick="cancelStudentReg('${ex.id}', '${s.regKey}', ${isRoomMode})" class="text-xs bg-rose-100 text-rose-700 font-bold px-3 py-1.5 rounded-lg hover:bg-rose-200 transition-colors shadow-sm">ยกเลิก</button></td>` : '';
         let row = isRoomMode
-          ? `<td class="p-4 font-medium text-slate-800">${idx+1}</td><td class="p-4">${s.studentId}</td><td class="p-4 font-bold text-indigo-700">${s.prefix||''}${s.firstName||''} ${s.lastName||''}</td><td class="p-4">${rmName}</td><td class="p-4 text-center">${s.grade||''}</td><td class="p-4 text-center">${s.room||''}</td><td class="p-4 text-center font-bold">${s.rollNumber||''}</td>`
-          : `<td class="p-4 font-medium text-slate-800">${idx+1}</td><td class="p-4">${s.studentId}</td><td class="p-4 font-bold text-indigo-700">${s.prefix||''}${s.firstName||''} ${s.lastName||''}</td><td class="p-4 text-center">${s.grade||''}</td><td class="p-4 text-center">${s.room||''}</td><td class="p-4 text-center font-bold">${s.rollNumber||''}</td><td class="p-4"></td>`;
+          ? `<td class="p-4 font-medium text-slate-800">${idx+1}</td><td class="p-4">${s.studentId}</td><td class="p-4 font-bold text-indigo-700">${s.prefix||''}${s.firstName||''} ${s.lastName||''}</td><td class="p-4">${rmName}</td><td class="p-4 text-center">${s.grade||''}</td><td class="p-4 text-center">${s.room||''}</td><td class="p-4 text-center font-bold">${s.rollNumber||''}</td>${manageBtn}`
+          : `<td class="p-4 font-medium text-slate-800">${idx+1}</td><td class="p-4">${s.studentId}</td><td class="p-4 font-bold text-indigo-700">${s.prefix||''}${s.firstName||''} ${s.lastName||''}</td><td class="p-4 text-center">${s.grade||''}</td><td class="p-4 text-center">${s.room||''}</td><td class="p-4 text-center font-bold">${s.rollNumber||''}</td><td class="p-4"></td>${manageBtn}`;
         tb += `<tr class="hover:bg-slate-50 transition-colors">${row}</tr>`;
       });
       
@@ -617,6 +672,20 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
         document.getElementById('mel-card').classList.remove('translate-x-full');
         document.getElementById('mel-card').classList.add('translate-x-0');
       }, 10);
+    }
+    
+    async function cancelStudentReg(examId, regKey, isRoomMode) {
+      if(!await sConfirm('ยืนยันยกเลิก','คุณต้องการยกเลิกการสมัครสอบของนักเรียนคนนี้ใช่หรือไม่?')) return;
+      showLoad(true); const ex = await db.get(`exams/${examId}`);
+      await db.del(`registrations/${regKey}`);
+      if(ex && ex.enrolledCount > 0) {
+        await db.patch(`exams/${examId}`, { enrolledCount: (ex.enrolledCount||1) - 1 });
+      }
+      showLoad(false); sAlert('สำเร็จ','ยกเลิกการสมัครเรียบร้อยแล้ว','success'); 
+      viewExportList(examId, isRoomMode);
+      if (!document.getElementById('view-ad-exams').classList.contains('app-hidden')) {
+          initView('ad-exams');
+      }
     }
     
     function downloadExportExcel() {
@@ -777,7 +846,22 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
     }
     async function delStudent(id) {
       if(!await sConfirm('ลบข้อมูล','ยืนยันการลบข้อมูลนักเรียนรหัส '+id+' หรือไม่?')) return;
-      showLoad(true); await db.del(`users/${id}`); await loadAdStudents(); showLoad(false);
+      showLoad(true); 
+      const rgO = await db.get('registrations');
+      if (rgO) {
+        const studentRegs = Object.keys(rgO).filter(k => rgO[k].studentId === id);
+        for (const k of studentRegs) {
+          const exId = rgO[k].examId;
+          const ex = await db.get(`exams/${exId}`);
+          await db.del(`registrations/${k}`);
+          if (ex && ex.enrolledCount > 0) {
+            await db.patch(`exams/${exId}`, { enrolledCount: ex.enrolledCount - 1 });
+          }
+        }
+      }
+      await db.del(`users/${id}`); 
+      await loadAdStudents(); 
+      showLoad(false);
     }
 
     // Exams
@@ -946,15 +1030,39 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
 
       let h = ''; roomsCache.forEach(r => {
         const assigned = regsCache.filter(x=>x.roomId===r.id).length;
-        h += `<tr><td class="p-4 font-bold text-slate-700 border-b border-slate-100">${r.name}</td><td class="p-4 text-center font-bold border-b border-slate-100">${r.capacity}</td><td class="p-4 text-center font-bold text-indigo-600 border-b border-slate-100">${assigned}</td><td class="p-4 text-right border-b border-slate-100"><button onclick="delRoom('${r.id}')" class="text-rose-500 hover:text-rose-700 font-bold bg-rose-50 px-2 py-1 rounded">ลบ</button></td></tr>`;
+        h += `<tr><td class="p-4 font-bold text-slate-700 border-b border-slate-100">${r.name}</td><td class="p-4 text-center font-bold border-b border-slate-100">${r.capacity}</td><td class="p-4 text-center font-bold text-indigo-600 border-b border-slate-100">${assigned}</td><td class="p-4 text-right border-b border-slate-100"><button onclick="editRoom('${r.id}', '${r.name}', ${r.capacity})" class="text-indigo-500 hover:text-indigo-700 font-bold bg-indigo-50 px-2 py-1 rounded mr-1">แก้ไข</button><button onclick="delRoom('${r.id}')" class="text-rose-500 hover:text-rose-700 font-bold bg-rose-50 px-2 py-1 rounded">ลบ</button></td></tr>`;
       });
       document.getElementById('rooms-list').innerHTML = h || '<tr><td colspan="4" class="p-8 text-center text-slate-500">ยังไม่มีห้องสอบ</td></tr>';
     }
 
+    function editRoom(id, name, cap) {
+      document.getElementById('rm-edit-id').value = id;
+      document.getElementById('rm-add-name').value = name;
+      document.getElementById('rm-add-cap').value = cap;
+      document.getElementById('rm-btn-save').textContent = 'บันทึก';
+      document.getElementById('rm-btn-cancel').classList.remove('app-hidden');
+    }
+    
+    function cancelEditRoom() {
+      document.getElementById('rm-edit-id').value = '';
+      document.getElementById('rm-add-name').value = '';
+      document.getElementById('rm-add-cap').value = '';
+      document.getElementById('rm-btn-save').textContent = '+ เพิ่มห้อง';
+      document.getElementById('rm-btn-cancel').classList.add('app-hidden');
+    }
+
     async function addRoom(e) {
-      e.preventDefault(); const n = document.getElementById('rm-add-name').value, c = parseInt(document.getElementById('rm-add-cap').value);
-      showLoad(true); await db.put(`rooms/${currentExamId}/rm_${Date.now()}`,{name:n, capacity:c});
-      document.getElementById('rm-add-name').value=''; document.getElementById('rm-add-cap').value=''; await loadRoomData(); showLoad(false);
+      e.preventDefault(); 
+      const n = document.getElementById('rm-add-name').value, c = parseInt(document.getElementById('rm-add-cap').value);
+      const editId = document.getElementById('rm-edit-id').value;
+      showLoad(true); 
+      if (editId) {
+        await db.patch(`rooms/${currentExamId}/${editId}`, {name:n, capacity:c});
+      } else {
+        await db.put(`rooms/${currentExamId}/rm_${Date.now()}`,{name:n, capacity:c});
+      }
+      cancelEditRoom();
+      await loadRoomData(); showLoad(false);
     }
     
     async function delRoom(id) {
@@ -1213,3 +1321,219 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
     async function saveAnnouncement(e) {
       e.preventDefault(); showLoad(true); await db.put('announcement', { text: document.getElementById('ad-ann-text').value }); showLoad(false); sAlert('สำเร็จ','บันทึกประกาศเรียบร้อย','success');
     }
+
+    // === CERTIFICATES MANAGEMENT ===
+    let ceExams = {};
+    let ceCerts = {};
+    let ceCurrentExamId = null;
+    let ceFields = [];
+    let ceBgImg = null;
+    let ceZoom = 0.4;
+    
+    async function loadAdCerts() {
+      showLoad(true);
+      const [exO, ctO] = await Promise.all([db.get('exams'), db.get('certificates')]);
+      ceExams = exO || {};
+      ceCerts = ctO || {};
+      
+      let h = '';
+      Object.keys(ceExams).forEach(k => {
+        const ex = ceExams[k];
+        const ct = ceCerts[k];
+        const status = ct && ct.isPublished ? '<span class="text-emerald-600 font-bold bg-emerald-50 px-2 py-1 rounded">เผยแพร่แล้ว</span>' : '<span class="text-slate-400 font-bold bg-slate-100 px-2 py-1 rounded">ยังไม่เผยแพร่</span>';
+        
+        h += `<tr class="hover:bg-slate-50 border-b border-slate-100">
+          <td class="p-4 font-mono text-slate-500">${ex.code || '-'}</td>
+          <td class="p-4 font-bold text-slate-800">${ex.name}</td>
+          <td class="p-4 text-center">${status}</td>
+          <td class="p-4 text-right">
+            <button onclick="openCertEditor('${k}')" class="text-indigo-600 hover:text-indigo-800 font-bold bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition-colors shadow-sm">ออกแบบ/แก้ไข</button>
+          </td>
+        </tr>`;
+      });
+      document.getElementById('ad-certs-list').innerHTML = h || '<tr><td colspan="4" class="p-8 text-center text-slate-500">ไม่มีข้อมูลวิชาสอบ</td></tr>';
+      showLoad(false);
+    }
+    
+    function openCertEditor(examId) {
+      ceCurrentExamId = examId;
+      const ex = ceExams[examId];
+      document.getElementById('ce-exam-name').innerHTML = `<svg class="w-6 h-6 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg> แม่แบบเกียรติบัตร: ${ex.name}`;
+      
+      const ct = ceCerts[examId] || {
+        w: 1191, h: 1684, bgBase64: '', isPublished: false,
+        fields: [], conditions: { gold: 80, silver: 60, bronze: 40 }
+      };
+      
+      document.getElementById('ce-w').value = ct.w || 1191;
+      document.getElementById('ce-h').value = ct.h || 1684;
+      document.getElementById('ce-cond-gold').value = ct.conditions?.gold || 80;
+      document.getElementById('ce-cond-silver').value = ct.conditions?.silver || 60;
+      document.getElementById('ce-cond-bronze').value = ct.conditions?.bronze || 40;
+      document.getElementById('ce-is-published').checked = ct.isPublished || false;
+      
+      ceFields = ct.fields ? JSON.parse(JSON.stringify(ct.fields)) : [];
+      
+      ceBgImg = new Image();
+      ceBgImg.onload = () => { ceUpdateCanvasSize(); };
+      if (ct.bgBase64) { ceBgImg.src = ct.bgBase64; } else { ceUpdateCanvasSize(); }
+      
+      ceZoom = window.innerWidth < 1024 ? 0.3 : 0.4;
+      applyCeZoom();
+      document.getElementById('modal-cert-editor').classList.remove('app-hidden');
+    }
+    
+    function ceUploadBg(e) {
+      const file = e.target.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        ceBgImg = new Image();
+        ceBgImg.onload = () => { ceUpdateCanvasSize(); };
+        ceBgImg.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+    
+    function ceUpdateCanvasSize() {
+      const w = parseInt(document.getElementById('ce-w').value) || 1191;
+      const h = parseInt(document.getElementById('ce-h').value) || 1684;
+      document.getElementById('ce-canvas-wrapper').style.width = w + 'px';
+      document.getElementById('ce-canvas-wrapper').style.height = h + 'px';
+      const cvs = document.getElementById('ce-canvas');
+      cvs.width = w; cvs.height = h;
+      ceUpdateCanvas();
+    }
+    
+    function ceZoomIn() { ceZoom += 0.1; applyCeZoom(); }
+    function ceZoomOut() { if(ceZoom > 0.1) ceZoom -= 0.1; applyCeZoom(); }
+    function applyCeZoom() {
+      document.getElementById('ce-canvas-wrapper').style.transform = `scale(${ceZoom})`;
+      document.getElementById('ce-zoom-label').textContent = Math.round(ceZoom*100) + '%';
+    }
+    
+    function ceAddField() {
+      ceFields.push({
+        id: 'field_' + Date.now(),
+        text: '[Name]',
+        x: parseInt(document.getElementById('ce-w').value)/2,
+        y: parseInt(document.getElementById('ce-h').value)/2,
+        font: 'Sarabun', size: 48, color: '#000000', align: 'center', bold: true
+      });
+      ceUpdateCanvas();
+    }
+    
+    function ceRemoveField(idx) {
+      ceFields.splice(idx, 1);
+      ceUpdateCanvas();
+    }
+    
+    function ceUpdateCanvas() {
+      const cvs = document.getElementById('ce-canvas');
+      if(!cvs) return;
+      const ctx = cvs.getContext('2d');
+      const w = cvs.width; const h = cvs.height;
+      
+      ctx.clearRect(0,0,w,h);
+      if(ceBgImg && ceBgImg.src) { ctx.drawImage(ceBgImg, 0, 0, w, h); }
+      
+      ceFields.forEach(f => {
+        ctx.font = `${f.bold ? 'bold ' : ''}${f.size}px "${f.font}", sans-serif`;
+        ctx.fillStyle = f.color;
+        ctx.textAlign = f.align;
+        ctx.textBaseline = 'middle';
+        ctx.fillText(f.text, f.x, f.y);
+      });
+      ceRenderFieldsList();
+    }
+    
+    function ceRenderFieldsList() {
+      const list = document.getElementById('ce-fields-list');
+      if(!list) return;
+      let html = '';
+      ceFields.forEach((f, idx) => {
+        html += `<div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm relative group">
+          <button onclick="ceRemoveField(${idx})" class="absolute top-2 right-2 text-rose-300 hover:text-rose-500 hidden group-hover:block"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+          <div class="mb-2">
+            <input type="text" value="${f.text}" onchange="ceFields[${idx}].text=this.value; ceUpdateCanvas()" class="modern-input !mb-0 !py-1.5 !px-2 w-full font-bold text-sm text-indigo-700 bg-indigo-50/50">
+            <p class="text-[10px] text-slate-400 mt-1">ใช้ [Name] สำหรับชื่อ, [Award] สำหรับรางวัล</p>
+          </div>
+          <div class="grid grid-cols-2 gap-2 mb-2">
+            <div><label class="text-[10px] text-slate-500 font-bold block mb-1">X (ซ้าย-ขวา)</label><input type="number" value="${f.x}" onchange="ceFields[${idx}].x=parseInt(this.value); ceUpdateCanvas()" class="modern-input !mb-0 !py-1 !px-2 w-full text-xs text-center font-mono"></div>
+            <div><label class="text-[10px] text-slate-500 font-bold block mb-1">Y (บน-ล่าง)</label><input type="number" value="${f.y}" onchange="ceFields[${idx}].y=parseInt(this.value); ceUpdateCanvas()" class="modern-input !mb-0 !py-1 !px-2 w-full text-xs text-center font-mono"></div>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div><label class="text-[10px] text-slate-500 font-bold block mb-1">ขนาด</label><input type="number" value="${f.size}" onchange="ceFields[${idx}].size=parseInt(this.value); ceUpdateCanvas()" class="modern-input !mb-0 !py-1 !px-2 w-full text-xs"></div>
+            <div><label class="text-[10px] text-slate-500 font-bold block mb-1">สี</label><input type="color" value="${f.color}" onchange="ceFields[${idx}].color=this.value; ceUpdateCanvas()" class="w-full h-7 rounded border border-slate-200 cursor-pointer"></div>
+            <div><label class="text-[10px] text-slate-500 font-bold block mb-1">จัดหน้า</label><select onchange="ceFields[${idx}].align=this.value; ceUpdateCanvas()" class="modern-input !mb-0 !py-1 !px-1 w-full text-xs"><option value="left" ${f.align==='left'?'selected':''}>ซ้าย</option><option value="center" ${f.align==='center'?'selected':''}>กลาง</option><option value="right" ${f.align==='right'?'selected':''}>ขวา</option></select></div>
+          </div>
+        </div>`;
+      });
+      list.innerHTML = html;
+    }
+    
+    async function ceSaveTemplate() {
+      if(!ceCurrentExamId) return;
+      const w = parseInt(document.getElementById('ce-w').value) || 1191;
+      const h = parseInt(document.getElementById('ce-h').value) || 1684;
+      const g = parseFloat(document.getElementById('ce-cond-gold').value) || 80;
+      const s = parseFloat(document.getElementById('ce-cond-silver').value) || 60;
+      const b = parseFloat(document.getElementById('ce-cond-bronze').value) || 40;
+      const pub = document.getElementById('ce-is-published').checked;
+      
+      let finalBg = '';
+      if (ceBgImg && ceBgImg.src && ceBgImg.src.startsWith('data:image')) {
+        const tempCvs = document.createElement('canvas');
+        let rw = ceBgImg.width; let rh = ceBgImg.height;
+        if (rw > 1500) { rh = rh * (1500/rw); rw = 1500; }
+        tempCvs.width = rw; tempCvs.height = rh;
+        const tempCtx = tempCvs.getContext('2d');
+        tempCtx.drawImage(ceBgImg, 0, 0, rw, rh);
+        finalBg = tempCvs.toDataURL('image/jpeg', 0.85);
+      } else if (ceBgImg && ceBgImg.src) {
+        finalBg = ceBgImg.src;
+      }
+      
+      const data = {
+        w, h, bgBase64: finalBg, fields: ceFields,
+        conditions: { gold: g, silver: s, bronze: b },
+        isPublished: pub, updatedAt: Date.now()
+      };
+      
+      showLoad(true);
+      await db.put(`certificates/${ceCurrentExamId}`, data);
+      sAlert('สำเร็จ', 'บันทึกแม่แบบเกียรติบัตรเรียบร้อยแล้ว', 'success');
+      showLoad(false);
+      closeModal('modal-cert-editor');
+      loadAdCerts();
+    }
+    
+    // Setup Canvas Dragging
+    document.addEventListener("DOMContentLoaded", () => {
+      const cvs = document.getElementById('ce-canvas');
+      if(!cvs) return;
+      let ceDragIdx = -1;
+      let ceIsDragging = false;
+      cvs.addEventListener('mousedown', (e) => {
+        const rect = e.target.getBoundingClientRect();
+        const scaleX = e.target.width / rect.width;
+        const scaleY = e.target.height / rect.height;
+        const x = (e.clientX - rect.left) * scaleX;
+        const y = (e.clientY - rect.top) * scaleY;
+        ceDragIdx = ceFields.findIndex(f => {
+          return x > f.x - 300 && x < f.x + 300 && y > f.y - f.size && y < f.y + f.size;
+        });
+        if(ceDragIdx > -1) ceIsDragging = true;
+      });
+      cvs.addEventListener('mousemove', (e) => {
+        if(!ceIsDragging || ceDragIdx === -1) return;
+        const rect = e.target.getBoundingClientRect();
+        const scaleX = e.target.width / rect.width;
+        const scaleY = e.target.height / rect.height;
+        ceFields[ceDragIdx].x = Math.round((e.clientX - rect.left) * scaleX);
+        ceFields[ceDragIdx].y = Math.round((e.clientY - rect.top) * scaleY);
+        ceUpdateCanvas();
+      });
+      cvs.addEventListener('mouseup', () => { ceIsDragging = false; ceDragIdx = -1; });
+      cvs.addEventListener('mouseleave', () => { ceIsDragging = false; ceDragIdx = -1; });
+    });

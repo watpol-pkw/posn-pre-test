@@ -77,7 +77,7 @@
           <div class="flex items-center gap-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span id="real-time">--:--</span></div>
         </div>
         
-        <div class="flex items-center gap-2 lg:gap-3 bg-white/10 lg:bg-slate-100/50 p-1 lg:pr-4 rounded-full lg:rounded-xl border border-white/20 lg:border-slate-200 cursor-pointer hover:bg-white/20 lg:hover:bg-slate-200/50 transition-colors" onclick="switchView('sd-profile')">
+        <div class="flex items-center gap-2 lg:gap-3 bg-white/10 lg:bg-slate-100/50 p-1 lg:pr-4 rounded-full lg:rounded-xl border border-white/20 lg:border-slate-200">
           <img src="https://img2.pic.in.th/PKW-Mascotace29467b055eb87.png" class="w-8 h-8 lg:w-9 lg:h-9 rounded-full object-cover bg-white" id="nav-avatar">
           <div class="hidden lg:block overflow-hidden max-w-[120px]">
             <div class="font-bold text-white lg:text-slate-800 text-sm truncate leading-tight" id="nav-name">-</div>
@@ -96,7 +96,7 @@
     <!-- WATERMARKS (Now inside the login card) -->
     <div id="global-watermarks" class="hidden"></div>
     
-    <!-- LOGIN VIEW (V1.6.1) -->
+    <!-- LOGIN VIEW (V1.7.0) -->
     <div id="view-login" class="fade-in max-w-5xl mx-auto mt-2 md:mt-4 flex flex-col md:flex-row h-full md:h-auto glass-card overflow-hidden shadow-2xl transition-all duration-300 relative">
       <!-- Left Side -->
       <div class="md:w-1/2 p-4 md:p-6 bg-gradient-to-br from-blue-700 via-indigo-600 to-teal-500 flex flex-col justify-center relative text-white z-10">
@@ -187,7 +187,7 @@
             <svg class="w-6 h-6 hover:text-indigo-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path></svg>
           </div>
           <div class="text-slate-400 text-[11px] font-medium leading-relaxed z-10 relative">
-            <p class="font-bold text-slate-500 mb-0.5">©2026 PKW POSN PRE-TEST | V1.6.1</p>
+            <p class="font-bold text-slate-500 mb-0.5">©2026 PKW POSN PRE-TEST | V1.7.0</p>
             <p>พัฒนาโดย <span class="font-black text-indigo-700 text-[12px]">นายจักรวิทย์ อรรฆกานต์ ณ ตะกั่วทุ่ง</span></p>
           </div>
         </div>
@@ -346,6 +346,28 @@
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8" id="ad-stats"></div>
+    </div>
+
+    <!-- AD-CERTS -->
+    <div id="view-ad-certs" class="fade-in">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+        <div><h2 class="text-3xl font-black text-slate-800">จัดการเกียรติบัตร</h2><p class="text-slate-500 mt-1">ตั้งค่าแม่แบบและเผยแพร่เกียรติบัตร</p></div>
+      </div>
+      <div class="glass-card p-0 overflow-hidden border border-slate-200">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse whitespace-nowrap">
+            <thead class="bg-slate-50 border-b border-slate-200 text-slate-700">
+              <tr>
+                <th class="p-4 font-semibold w-24">รหัสวิชา</th>
+                <th class="p-4 font-semibold">ชื่อวิชาสอบ</th>
+                <th class="p-4 font-semibold text-center w-32">สถานะ</th>
+                <th class="p-4 font-semibold text-right w-40">การจัดการ</th>
+              </tr>
+            </thead>
+            <tbody id="ad-certs-list" class="divide-y divide-slate-100 bg-white/50"></tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
     <!-- AD-REPORTS -->
@@ -533,7 +555,7 @@
       </div>
     </div>
 
-    <!-- AD-INDIV-SCORES (V1.6.1) -->
+    <!-- AD-INDIV-SCORES (V1.7.0) -->
     <div id="view-ad-indiv-scores" class="fade-in">
       <h2 class="text-3xl font-black text-slate-800 mb-6">คะแนนรายบุคคล</h2>
       
@@ -664,9 +686,11 @@
       <div class="p-6 shrink-0 border-b border-slate-100">
         <div class="flex flex-wrap gap-4 items-center justify-between">
           <form onsubmit="addRoom(event)" class="flex gap-2 w-full md:w-auto">
+            <input type="hidden" id="rm-edit-id" value="">
             <input type="text" id="rm-add-name" placeholder="ชื่อห้องสอบ" class="modern-input !mb-0 w-full md:w-48 shadow-sm" required>
             <input type="number" id="rm-add-cap" placeholder="ความจุ" class="modern-input !mb-0 w-24 shadow-sm" required min="1">
-            <button type="submit" class="bg-indigo-600 text-white px-4 rounded-lg font-bold hover:bg-indigo-700 shadow-sm whitespace-nowrap transition-colors">+ เพิ่มห้อง</button>
+            <button type="submit" id="rm-btn-save" class="bg-indigo-600 text-white px-4 rounded-lg font-bold hover:bg-indigo-700 shadow-sm whitespace-nowrap transition-colors">+ เพิ่มห้อง</button>
+            <button type="button" id="rm-btn-cancel" onclick="cancelEditRoom()" class="app-hidden bg-slate-300 text-slate-700 px-4 rounded-lg font-bold hover:bg-slate-400 shadow-sm whitespace-nowrap transition-colors">ยกเลิก</button>
           </form>
           <div class="flex gap-2 w-full md:w-auto justify-end">
             <button onclick="autoAssignSeats()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-indigo-700 shadow-sm transition-colors">จัดที่นั่งอัตโนมัติ (ก-ฮ)</button>
@@ -691,6 +715,75 @@
 
   <!-- Print Roster Container (Obsolete but kept for safety) -->
   <div id="print-container" class="print-only"></div>
+
+  <!-- Certificate Editor Modal -->
+  <div id="modal-cert-editor" class="app-hidden fixed inset-0 z-[110] bg-slate-900/60 backdrop-blur-sm flex justify-center items-center p-2 lg:p-4 transition-opacity duration-300">
+    <div class="bg-white rounded-2xl w-full h-[95vh] max-h-screen flex flex-col shadow-2xl relative overflow-hidden">
+      <div class="p-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center shrink-0">
+        <h3 class="text-xl font-black text-slate-800 flex items-center gap-2" id="ce-exam-name"><svg class="w-6 h-6 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg> ออกแบบแม่แบบเกียรติบัตร</h3>
+        <button onclick="closeModal('modal-cert-editor'); loadAdCerts();" class="text-slate-400 hover:text-slate-600 bg-slate-200 p-2 rounded-lg transition-colors"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+      </div>
+      <div class="flex flex-col lg:flex-row flex-1 overflow-hidden">
+        
+        <!-- Left Tools Panel -->
+        <div class="w-full lg:w-80 border-r border-slate-200 bg-slate-50 flex flex-col overflow-y-auto shrink-0 p-4 gap-6 relative z-20 shadow-md">
+          
+          <div>
+            <h4 class="font-bold text-slate-700 mb-3 border-b border-slate-200 pb-2">1. ตั้งค่ากระดาษและพื้นหลัง</h4>
+            <div class="grid grid-cols-2 gap-3 mb-3">
+              <div><label class="modern-label text-xs">กว้าง (px)</label><input type="number" id="ce-w" class="modern-input !mb-0 !py-2 !px-3" value="1191" onchange="ceUpdateCanvasSize()"></div>
+              <div><label class="modern-label text-xs">สูง (px)</label><input type="number" id="ce-h" class="modern-input !mb-0 !py-2 !px-3" value="1684" onchange="ceUpdateCanvasSize()"></div>
+            </div>
+            <div class="mb-3">
+              <label class="modern-label text-xs">ภาพพื้นหลัง (อัปโหลดอัตราส่วนที่ตรงกับขนาด px)</label>
+              <input type="file" id="ce-bg-file" accept="image/jpeg,image/png" class="hidden" onchange="ceUploadBg(event)">
+              <button onclick="document.getElementById('ce-bg-file').click()" class="btn-secondary !py-2 text-sm flex items-center justify-center gap-2 mb-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg> เลือกภาพพื้นหลัง</button>
+            </div>
+          </div>
+          
+          <div>
+            <h4 class="font-bold text-slate-700 mb-3 border-b border-slate-200 pb-2">2. จัดการฟิลด์ข้อมูล</h4>
+            <div id="ce-fields-list" class="space-y-3 mb-3"></div>
+            <button onclick="ceAddField()" class="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 font-bold px-3 py-1.5 rounded-lg text-sm w-full transition-colors flex items-center justify-center gap-1">+ เพิ่มฟิลด์ข้อความ</button>
+          </div>
+          
+          <div>
+            <h4 class="font-bold text-slate-700 mb-3 border-b border-slate-200 pb-2">3. เงื่อนไขแจกรางวัล (Percentile)</h4>
+            <div class="space-y-2">
+              <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-amber-400 shadow-sm"></div><span class="text-sm font-medium w-16">เหรียญทอง</span> <span class="text-xs text-slate-500">PR >=</span> <input type="number" id="ce-cond-gold" class="modern-input !mb-0 !py-1 !px-2 w-20 text-center font-bold" value="80"></div>
+              <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-slate-300 shadow-sm"></div><span class="text-sm font-medium w-16">เหรียญเงิน</span> <span class="text-xs text-slate-500">PR >=</span> <input type="number" id="ce-cond-silver" class="modern-input !mb-0 !py-1 !px-2 w-20 text-center font-bold" value="60"></div>
+              <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-amber-700 shadow-sm"></div><span class="text-sm font-medium w-16">ทองแดง</span> <span class="text-xs text-slate-500">PR >=</span> <input type="number" id="ce-cond-bronze" class="modern-input !mb-0 !py-1 !px-2 w-20 text-center font-bold" value="40"></div>
+            </div>
+          </div>
+          
+          <div class="mt-auto flex flex-col gap-2 pt-4">
+            <label class="inline-flex items-center gap-2 cursor-pointer mb-2 bg-emerald-50 p-3 rounded-lg border border-emerald-100">
+              <input type="checkbox" id="ce-is-published" class="w-5 h-5 text-emerald-600 rounded">
+              <span class="font-bold text-emerald-800 text-sm">เผยแพร่ให้นักเรียนดาวน์โหลด</span>
+            </label>
+            <button onclick="ceSaveTemplate()" class="btn-primary !py-3 flex items-center justify-center gap-2"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg> บันทึกแม่แบบ</button>
+          </div>
+          
+        </div>
+        
+        <!-- Right Canvas Panel -->
+        <div class="flex-1 bg-slate-200/80 overflow-auto flex justify-center p-4 relative" id="ce-canvas-container">
+          <div class="bg-white shadow-2xl relative transition-transform" id="ce-canvas-wrapper" style="transform-origin: top center; transform: scale(0.4);">
+            <!-- Background Image -->
+            <img id="ce-bg-img" class="absolute inset-0 w-full h-full object-contain pointer-events-none" style="display:none;">
+            <!-- Foreground Canvas -->
+            <canvas id="ce-canvas"></canvas>
+          </div>
+          
+          <div class="absolute bottom-4 right-4 bg-white/90 backdrop-blur-md rounded-xl p-2 shadow-lg flex gap-2">
+            <button onclick="ceZoomOut()" class="p-2 hover:bg-slate-100 rounded-lg text-slate-600"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7"></path></svg></button>
+            <span class="font-bold text-slate-700 flex items-center px-2 text-sm" id="ce-zoom-label">40%</span>
+            <button onclick="ceZoomIn()" class="p-2 hover:bg-slate-100 rounded-lg text-slate-600"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Export List Modal (Slide Replace) -->
   <div id="modal-export-list" class="app-hidden fixed inset-0 z-[120] bg-slate-900/60 backdrop-blur-sm flex justify-center items-center p-4 transition-opacity duration-300">
