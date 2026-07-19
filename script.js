@@ -170,8 +170,69 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
 
     document.addEventListener('DOMContentLoaded', async () => {
       try { await initRolesDB(); } catch(e){}
-      checkSess();
+      
+      const urlParams = new URLSearchParams(window.location.search);
+      const verifyKey = urlParams.get('verify');
+      if(verifyKey) {
+        verifyCert(verifyKey);
+      } else {
+        checkSess();
+      }
     });
+
+    async function verifyCert(regKey) {
+      document.getElementById('view-login').classList.add('app-hidden');
+      document.getElementById('app').classList.add('app-hidden');
+      document.getElementById('view-verify').classList.remove('app-hidden');
+      
+      try {
+        const r = await db.get(`registrations/${regKey}`);
+        if(!r) throw new Error('ไม่พบข้อมูลการลงทะเบียน (Invalid Certificate)');
+        
+        const ex = await db.get(`exams/${r.examId}`);
+        const ct = await db.get(`certificates/${r.examId}`);
+        const st = await db.get(`users/${r.studentId}`);
+        
+        if(!ex || !ct || !ct.isPublished) throw new Error('ไม่พบเกียรติบัตรนี้ในระบบ หรือถูกระงับการเผยแพร่');
+        if(!st) throw new Error('ไม่พบข้อมูลนักเรียนเจ้าของเกียรติบัตร');
+        
+        const rg = await db.get('registrations');
+        let allScores = [];
+        if(rg) {
+           allScores = Object.values(rg).filter(x => x.examId === r.examId && x.score !== '' && !x.isAbsent).map(x => parseFloat(x.score)).filter(x => !isNaN(x));
+        }
+        const pr = getPercentileRank(r.score, allScores);
+        const md = getMedal(pr, ct.conditions);
+        
+        if(!md) throw new Error('นักเรียนท่านนี้ไม่ผ่านเกณฑ์การรับเกียรติบัตร');
+        
+        const fullName = `${st.prefix||''}${st.firstName} ${st.lastName}`;
+        document.getElementById('verify-loading').classList.add('hidden');
+        
+        let html = `
+          <div class="mb-6"><div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-md"><svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg></div></div>
+          <h2 class="text-2xl font-black text-slate-800 mb-2">ข้อมูลถูกต้อง (Verified)</h2>
+          <p class="text-slate-500 mb-6 font-medium">เกียรติบัตรฉบับนี้ออกโดยโรงเรียนภูเก็ตวิทยาลัย ระบบ POSN PRE-TEST</p>
+          <div class="text-left bg-slate-50 border border-slate-200 rounded-xl p-5 mb-4 space-y-3">
+            <div class="flex flex-col md:flex-row md:items-center border-b border-slate-100 pb-2"><span class="text-sm font-bold text-slate-400 w-32 shrink-0">ชื่อ-สกุล :</span><span class="font-bold text-indigo-700 text-lg">${fullName}</span></div>
+            <div class="flex flex-col md:flex-row md:items-center border-b border-slate-100 pb-2"><span class="text-sm font-bold text-slate-400 w-32 shrink-0">วิชาที่สอบ :</span><span class="font-bold text-slate-800">${ex.name}</span></div>
+            <div class="flex flex-col md:flex-row md:items-center border-b border-slate-100 pb-2"><span class="text-sm font-bold text-slate-400 w-32 shrink-0">รางวัลที่ได้รับ :</span><span class="${md.color} font-black text-lg">${md.name}</span></div>
+            <div class="flex flex-col md:flex-row md:items-center"><span class="text-sm font-bold text-slate-400 w-32 shrink-0">รหัสอ้างอิง :</span><span class="font-medium text-slate-500 text-xs">${regKey}</span></div>
+          </div>
+        `;
+        document.getElementById('verify-result').innerHTML = html;
+        document.getElementById('verify-result').classList.remove('hidden');
+        
+      } catch(e) {
+        document.getElementById('verify-loading').classList.add('hidden');
+        document.getElementById('verify-result').innerHTML = `
+          <div class="mb-6"><div class="w-20 h-20 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto shadow-md"><svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></div></div>
+          <h2 class="text-2xl font-black text-slate-800 mb-2">ตรวจสอบไม่สำเร็จ</h2>
+          <p class="text-rose-600 font-bold bg-rose-50 p-4 rounded-xl inline-block shadow-inner">${e.message}</p>
+        `;
+        document.getElementById('verify-result').classList.remove('hidden');
+      }
+    }
 
     function checkSess() {
       const s = sessionStorage.getItem('posnSess');
@@ -410,7 +471,7 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
             <td class="p-4 border-b border-slate-100 text-center">
               <div class="flex items-center justify-center gap-2">
                 <button onclick="showScorePopup('${ex.name}', ${sc}, ${ts}, ${pr}, '${md?md.name:''}')" class="bg-indigo-100 text-indigo-700 p-2 rounded-lg hover:bg-indigo-200 transition-colors shadow-sm" title="ดูรายละเอียดคะแนน"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg></button>
-                ${(md && cert && cert.isPublished) ? `<button onclick="downloadCert('${ex.id}', '${ex.name}', '${md.name}')" class="bg-amber-100 text-amber-700 p-2 rounded-lg hover:bg-amber-200 transition-colors font-bold text-sm flex items-center gap-1 shadow-sm"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path></svg> เกียรติบัตร</button>` : ''}
+                ${(md && cert && cert.isPublished) ? `<button onclick="downloadCert('${ex.id}', '${ex.name}', '${md.name}', '${r.id}')" class="bg-amber-100 text-amber-700 p-2 rounded-lg hover:bg-amber-200 transition-colors font-bold text-sm flex items-center gap-1 shadow-sm"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path></svg> เกียรติบัตร</button>` : ''}
               </div>
             </td>
           </tr>`;
@@ -436,7 +497,7 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
       Swal.fire({ title: name, html: html, confirmButtonText: 'ปิด', confirmButtonColor: '#4f46e5', width: 400 });
     }
 
-    async function downloadCert(examId, exName, mdName) {
+    async function downloadCert(examId, exName, mdName, regKey) {
       showLoad(true);
       try {
         const ct = await db.get(`certificates/${examId}`);
@@ -469,6 +530,19 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
           ctx.textBaseline = 'middle';
           ctx.fillText(txt, f.x, f.y);
         });
+        
+        if (ct.qr && ct.qr.enabled) {
+          const verifyUrl = window.location.origin + window.location.pathname + '?verify=' + regKey;
+          const qr = new QRious({
+            value: verifyUrl,
+            size: ct.qr.size || 150,
+            level: 'M'
+          });
+          const qrImg = new Image();
+          qrImg.src = qr.toDataURL();
+          await new Promise(res => { qrImg.onload = res; qrImg.onerror = res; });
+          ctx.drawImage(qrImg, ct.qr.x || 100, ct.qr.y || 100, ct.qr.size || 150, ct.qr.size || 150);
+        }
         
         const imgData = cvs.toDataURL('image/jpeg', 1.0);
         
@@ -731,7 +805,7 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
       
-      if(!window.thaiFontBase64) window.thaiFontBase64 = await getBase64Font();
+      if(!window.thaiFontBase64) window.thaiFontBase64 = window.THSarabunNewBase64 || await getBase64Font();
       
       if(window.thaiFontBase64) {
         doc.addFileToVFS('Sarabun.ttf', window.thaiFontBase64);
@@ -739,7 +813,6 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
         doc.setFont('Sarabun');
       }
 
-      // We won't block if logos fail to load due to CORS.
       const logo1 = await getBase64ImageFromUrl('https://pkw.ac.th/pkw/toon/logo_pkw.jpg').catch(()=>null);
       const logo2 = await getBase64ImageFromUrl('https://img1.pic.in.th/images/PKW-POSN.png').catch(()=>null);
       
@@ -802,6 +875,28 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
       const q = document.getElementById('ad-search-student').value.toLowerCase();
       const s = allStudents.filter(x => x.id.includes(q) || (x.firstName+' '+x.lastName).toLowerCase().includes(q));
       document.getElementById('ad-students-list').innerHTML = s.map(x=>`<tr><td class="p-3 font-bold text-indigo-700 border-b border-slate-100">${x.id}</td><td class="p-3 border-b border-slate-100">${x.prefix||''}${x.firstName} ${x.lastName}</td><td class="p-3 border-b border-slate-100">ชั้น ${x.grade}/${x.room} <span class="bg-slate-100 px-1 rounded text-xs ml-1 font-bold text-slate-500">เลขที่ ${x.rollNumber}</span></td><td class="p-3 border-b border-slate-100 text-right"><button onclick="editStudent('${x.id}')" class="text-xs bg-slate-100 text-slate-700 font-bold px-2 py-1 rounded hover:bg-slate-200 mr-1">แก้ไข</button><button onclick="delStudent('${x.id}')" class="text-xs bg-rose-100 text-rose-700 font-bold px-2 py-1 rounded hover:bg-rose-200">ลบ</button></td></tr>`).join('') || '<tr><td colspan="4" class="p-8 text-center text-slate-500">ไม่พบข้อมูลนักเรียน</td></tr>';
+    }
+    
+    function downloadAllStudentsExcel() {
+      if(!allStudents || allStudents.length === 0) return sAlert('ไม่มีข้อมูล', 'ไม่มีข้อมูลนักเรียนในระบบ', 'warning');
+      
+      const data = allStudents.sort((a,b) => parseInt(a.id) - parseInt(b.id)).map((s, idx) => {
+        return {
+          'ลำดับที่': idx + 1,
+          'รหัสนักเรียน': s.id,
+          'คำนำหน้า': s.prefix || '',
+          'ชื่อ': s.firstName || '',
+          'นามสกุล': s.lastName || '',
+          'ชั้น': s.grade || '',
+          'ห้อง': s.room || '',
+          'เลขที่': s.rollNumber || '',
+          'รหัสผ่าน': s.password || ''
+        };
+      });
+      const ws = XLSX.utils.json_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "ข้อมูลนักเรียน");
+      XLSX.writeFile(wb, `ข้อมูลนักเรียนทั้งหมด.xlsx`);
     }
     function openStudentModal() {
       document.getElementById('ms-is-edit').value = 'false'; document.getElementById('ms-old-id').value=''; document.getElementById('ms-id').value='';
@@ -1270,7 +1365,7 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
       let h = '';
       filtered.forEach(s => {
         h += `<div class="p-3 border-b border-slate-100 hover:bg-slate-50 cursor-pointer" onclick="selectIndivScoreStudent('${s.studentId}')">
-          <div class="font-bold text-emerald-700">${s.studentId}</div><div class="text-xs text-slate-500">${s.prefix||''}${s.firstName||''} ${s.lastName||''} (ม.${s.grade||'-'}/${s.room||'-'} เลขที่ ${s.rollNumber||'-'})</div>
+          <div class="font-bold text-emerald-700">${s.studentId}</div><div class="text-xs text-slate-500">${s.prefix||''}${s.firstName||''} ${s.lastName||''} (${s.grade||'-'}/${s.room||'-'} เลขที่ ${s.rollNumber||'-'})</div>
         </div>`;
       });
       dd.innerHTML = h || '<div class="p-4 text-center text-slate-500">ไม่พบนักเรียน</div>';
@@ -1282,7 +1377,7 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
       document.getElementById('ais-search').value = '';
       const st = allUsers.find(x=>x.studentId===studentId);
       document.getElementById('ais-student-name').textContent = `${st.studentId} : ${st.prefix||''}${st.firstName||''} ${st.lastName||''}`;
-      document.getElementById('ais-stats').textContent = `ระดับชั้น ม.${st.grade||'-'}/${st.room||'-'} เลขที่ ${st.rollNumber||'-'}`;
+      document.getElementById('ais-stats').textContent = `ระดับชั้น ${st.grade||'-'}/${st.room||'-'} เลขที่ ${st.rollNumber||'-'}`;
       
       showLoad(true); const [rO, eO] = await Promise.all([db.get('registrations'), db.get('exams')]); showLoad(false);
       const allRegs = Object.keys(rO||{}).map(k=>({regId:k,...rO[k]}));
@@ -1372,6 +1467,12 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
       document.getElementById('ce-cond-bronze').value = ct.conditions?.bronze || 40;
       document.getElementById('ce-is-published').checked = ct.isPublished || false;
       
+      const qr = ct.qr || { enabled: false, x: 100, y: 100, size: 150 };
+      document.getElementById('ce-qr-enabled').checked = qr.enabled;
+      document.getElementById('ce-qr-x').value = qr.x;
+      document.getElementById('ce-qr-y').value = qr.y;
+      document.getElementById('ce-qr-size').value = qr.size;
+      
       ceFields = ct.fields ? JSON.parse(JSON.stringify(ct.fields)) : [];
       
       ceBgImg = new Image();
@@ -1444,6 +1545,23 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
         ctx.textBaseline = 'middle';
         ctx.fillText(f.text, f.x, f.y);
       });
+      
+      const qrEnabled = document.getElementById('ce-qr-enabled').checked;
+      if (qrEnabled) {
+        const qrx = parseInt(document.getElementById('ce-qr-x').value) || 100;
+        const qry = parseInt(document.getElementById('ce-qr-y').value) || 100;
+        const qrs = parseInt(document.getElementById('ce-qr-size').value) || 150;
+        
+        const qrious = new QRious({
+          value: 'https://example.com/verify?id=TEST',
+          size: qrs,
+          level: 'M'
+        });
+        const qrImg = new Image();
+        qrImg.src = qrious.toDataURL();
+        qrImg.onload = () => { ctx.drawImage(qrImg, qrx, qry, qrs, qrs); };
+      }
+      
       ceRenderFieldsList();
     }
     
@@ -1480,6 +1598,10 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
       const s = parseFloat(document.getElementById('ce-cond-silver').value) || 60;
       const b = parseFloat(document.getElementById('ce-cond-bronze').value) || 40;
       const pub = document.getElementById('ce-is-published').checked;
+      const qrEnabled = document.getElementById('ce-qr-enabled').checked;
+      const qrx = parseInt(document.getElementById('ce-qr-x').value) || 100;
+      const qry = parseInt(document.getElementById('ce-qr-y').value) || 100;
+      const qrs = parseInt(document.getElementById('ce-qr-size').value) || 150;
       
       let finalBg = '';
       if (ceBgImg && ceBgImg.src && ceBgImg.src.startsWith('data:image')) {
@@ -1497,6 +1619,7 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
       const data = {
         w, h, bgBase64: finalBg, fields: ceFields,
         conditions: { gold: g, silver: s, bronze: b },
+        qr: { enabled: qrEnabled, x: qrx, y: qry, size: qrs },
         isPublished: pub, updatedAt: Date.now()
       };
       
@@ -1514,26 +1637,53 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
       if(!cvs) return;
       let ceDragIdx = -1;
       let ceIsDragging = false;
+      let ceDragQr = false;
       cvs.addEventListener('mousedown', (e) => {
         const rect = e.target.getBoundingClientRect();
         const scaleX = e.target.width / rect.width;
         const scaleY = e.target.height / rect.height;
         const x = (e.clientX - rect.left) * scaleX;
         const y = (e.clientY - rect.top) * scaleY;
+        
+        const qrEnabled = document.getElementById('ce-qr-enabled').checked;
+        if (qrEnabled) {
+          const qrx = parseInt(document.getElementById('ce-qr-x').value) || 100;
+          const qry = parseInt(document.getElementById('ce-qr-y').value) || 100;
+          const qrs = parseInt(document.getElementById('ce-qr-size').value) || 150;
+          if (x >= qrx && x <= qrx + qrs && y >= qry && y <= qry + qrs) {
+            ceDragQr = true;
+            ceIsDragging = true;
+            return;
+          }
+        }
+        
         ceDragIdx = ceFields.findIndex(f => {
           return x > f.x - 300 && x < f.x + 300 && y > f.y - f.size && y < f.y + f.size;
         });
         if(ceDragIdx > -1) ceIsDragging = true;
       });
       cvs.addEventListener('mousemove', (e) => {
-        if(!ceIsDragging || ceDragIdx === -1) return;
+        if(!ceIsDragging) return;
         const rect = e.target.getBoundingClientRect();
         const scaleX = e.target.width / rect.width;
         const scaleY = e.target.height / rect.height;
-        ceFields[ceDragIdx].x = Math.round((e.clientX - rect.left) * scaleX);
-        ceFields[ceDragIdx].y = Math.round((e.clientY - rect.top) * scaleY);
-        ceUpdateCanvas();
+        const x = Math.round((e.clientX - rect.left) * scaleX);
+        const y = Math.round((e.clientY - rect.top) * scaleY);
+        
+        if (ceDragQr) {
+          const qrs = parseInt(document.getElementById('ce-qr-size').value) || 150;
+          document.getElementById('ce-qr-x').value = Math.round(x - qrs/2);
+          document.getElementById('ce-qr-y').value = Math.round(y - qrs/2);
+          ceUpdateCanvas();
+          return;
+        }
+        
+        if (ceDragIdx > -1) {
+          ceFields[ceDragIdx].x = x;
+          ceFields[ceDragIdx].y = y;
+          ceUpdateCanvas();
+        }
       });
-      cvs.addEventListener('mouseup', () => { ceIsDragging = false; ceDragIdx = -1; });
-      cvs.addEventListener('mouseleave', () => { ceIsDragging = false; ceDragIdx = -1; });
+      cvs.addEventListener('mouseup', () => { ceIsDragging = false; ceDragIdx = -1; ceDragQr = false; });
+      cvs.addEventListener('mouseleave', () => { ceIsDragging = false; ceDragIdx = -1; ceDragQr = false; });
     });
