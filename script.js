@@ -869,12 +869,31 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
       
-      if(!window.thaiFontBase64) window.thaiFontBase64 = window.THSarabunNewBase64 || await getBase64Font();
-      
-      if(window.thaiFontBase64) {
-        doc.addFileToVFS('Sarabun.ttf', window.thaiFontBase64);
-        doc.addFont('Sarabun.ttf', 'Sarabun', 'normal');
-        doc.setFont('Sarabun');
+      if(window.THSarabunNew_Normal) {
+        doc.addFileToVFS('THSarabunNew.ttf', window.THSarabunNew_Normal);
+        doc.addFont('THSarabunNew.ttf', 'THSarabunNew', 'normal');
+        
+        if (window.THSarabunNew_Bold) {
+          doc.addFileToVFS('THSarabunNew-Bold.ttf', window.THSarabunNew_Bold);
+          doc.addFont('THSarabunNew-Bold.ttf', 'THSarabunNew', 'bold');
+        }
+        if (window.THSarabunNew_Italic) {
+          doc.addFileToVFS('THSarabunNew-Italic.ttf', window.THSarabunNew_Italic);
+          doc.addFont('THSarabunNew-Italic.ttf', 'THSarabunNew', 'italic');
+        }
+        if (window.THSarabunNew_BoldItalic) {
+          doc.addFileToVFS('THSarabunNew-BoldItalic.ttf', window.THSarabunNew_BoldItalic);
+          doc.addFont('THSarabunNew-BoldItalic.ttf', 'THSarabunNew', 'bolditalic');
+        }
+
+        doc.setFont('THSarabunNew');
+      } else {
+        if(!window.thaiFontBase64) window.thaiFontBase64 = window.THSarabunNewBase64 || await getBase64Font();
+        if(window.thaiFontBase64) {
+          doc.addFileToVFS('Sarabun.ttf', window.thaiFontBase64);
+          doc.addFont('Sarabun.ttf', 'Sarabun', 'normal');
+          doc.setFont('Sarabun');
+        }
       }
 
       const logo1 = await getBase64ImageFromUrl('https://pkw.ac.th/pkw/toon/logo_pkw.jpg').catch(()=>null);
