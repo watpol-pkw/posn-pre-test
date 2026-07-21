@@ -443,6 +443,11 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
         const rm = r.roomId && d.rooms[ex.id] ? d.rooms[ex.id][r.roomId] : null;
         const rmName = rm ? rm.name : 'รอประกาศ';
         const seat = r.seatNumber ? String(r.seatNumber).padStart(2,'0') : '-';
+        
+        const cleanGrade = (u.grade || '').replace(/^ม\.?/, '');
+        const gradeText = cleanGrade ? `ม.${cleanGrade}/${u.room || '-'}` : '-';
+        const rollText = u.rollNumber ? `เลขที่ ${u.rollNumber}` : '';
+
         h += `<div class="bg-white border-2 border-slate-200 rounded-2xl p-6 relative overflow-hidden shadow-sm">
           <div class="absolute top-0 right-0 bg-indigo-600 text-white font-black px-4 py-2 rounded-bl-2xl shadow-sm text-sm z-10">${ex.code||'-'}</div>
           <div class="flex items-start gap-4 mb-4 pt-2 border-b border-slate-100 pb-4">
@@ -451,6 +456,10 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
               <div class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">ข้อมูลผู้สอบ</div>
               <div class="font-black text-xl text-indigo-700 leading-tight">${u.studentId}</div>
               <div class="font-bold text-slate-800 text-lg">${u.prefix||''}${u.firstName} ${u.lastName}</div>
+              <div class="text-sm font-medium text-slate-600 mt-1 flex items-center gap-1.5">
+                <span class="bg-slate-100 px-2 py-0.5 rounded text-xs">ชั้น ${gradeText}</span>
+                ${rollText ? `<span class="bg-slate-100 px-2 py-0.5 rounded text-xs">${rollText}</span>` : ''}
+              </div>
             </div>
           </div>
           <div class="mb-4">
