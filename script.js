@@ -283,12 +283,13 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
 
     /* ---- STUDENT LOGIC ---- */
     async function fetchSdData() {
-      const [ex, rg, an, rm] = await Promise.all([db.get('exams'), db.get('registrations'), db.get('announcement'), db.get('rooms')]);
+      const [ex, rg, an, rm, ct] = await Promise.all([db.get('exams'), db.get('registrations'), db.get('announcement'), db.get('rooms'), db.get('certificates')]);
       const exams = ex ? Object.keys(ex).map(k=>({id:k,...ex[k]})) : [];
       const regs = rg ? Object.keys(rg).map(k=>({id:k,...rg[k]})).filter(x=>x.studentId===u.studentId) : [];
       const rooms = rm || {};
       const allRegsList = rg ? Object.keys(rg).map(k=>({id:k,...rg[k]})) : [];
-      return { exams, regs, an, rooms, allRegsList };
+      const certificates = ct || {};
+      return { exams, regs, an, rooms, allRegsList, certificates };
     }
 
     async function loadSdHome() {
@@ -521,8 +522,8 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
         
         (ct.fields || []).forEach(f => {
           let txt = f.text;
-          txt = txt.replace(/\\[Name\\]/g, fullName);
-          txt = txt.replace(/\\[Award\\]/g, mdName);
+          txt = txt.replace(/\[Name\]/ig, fullName);
+          txt = txt.replace(/\[Award\]/ig, mdName);
           
           ctx.font = `${f.bold?'bold ':''}${f.size}px "${f.font}", sans-serif`;
           ctx.fillStyle = f.color;
@@ -842,7 +843,7 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
           
           doc.autoTable({
             head: head, body: body, startY: 38,
-            styles: { font: 'Sarabun', fontSize: 12, cellPadding: 3 },
+            styles: { font: 'Sarabun', fontSize: 10, cellPadding: 3 },
             headStyles: { fillColor: [240,244,248], textColor: [15,23,42], fontStyle: 'bold' },
             didDrawPage: (data) => drawHeader(data, rm.name),
             margin: { top: 38 }
@@ -854,7 +855,7 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
         
         doc.autoTable({
           head: head, body: body, startY: 38,
-          styles: { font: 'Sarabun', fontSize: 12, cellPadding: 3 },
+          styles: { font: 'Sarabun', fontSize: 10, cellPadding: 3 },
           headStyles: { fillColor: [240,244,248], textColor: [15,23,42], fontStyle: 'bold' },
           didDrawPage: (data) => drawHeader(data, ''),
           margin: { top: 38 }
