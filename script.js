@@ -490,9 +490,9 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
     function getMedal(pr, cond) {
       const p = parseFloat(pr);
       if(isNaN(p)) return null;
-      const g = cond?.gold || 80;
-      const s = cond?.silver || 60;
-      const b = cond?.bronze || 40;
+      const g = cond?.gold || 95;
+      const s = cond?.silver || 85;
+      const b = cond?.bronze || 70;
       if(p >= g) return { name: 'เหรียญทอง', color: 'text-amber-500', bg: 'bg-amber-50' };
       if(p >= s) return { name: 'เหรียญเงิน', color: 'text-slate-500', bg: 'bg-slate-100' };
       if(p >= b) return { name: 'เหรียญทองแดง', color: 'text-orange-700', bg: 'bg-orange-50' };
@@ -509,8 +509,10 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
         
         if(r.isAbsent) {
           h += `<tr><td class="p-4 border-b border-slate-100"><strong class="text-slate-800">[${ex.code||'-'}] ${ex.name}</strong></td><td colspan="5" class="p-4 border-b border-slate-100 text-center"><span class="text-rose-500 font-bold bg-rose-50 px-3 py-1.5 rounded-lg border border-rose-200">ขาดสอบ</span></td></tr>`;
+        } else if (!ex.isScorePublished) {
+          h += `<tr><td class="p-4 border-b border-slate-100"><strong class="text-slate-800">[${ex.code||'-'}] ${ex.name}</strong></td><td colspan="5" class="p-4 border-b border-slate-100 text-center"><span class="text-indigo-500 font-bold bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-200">รอประกาศผล</span></td></tr>`;
         } else if (!r.score) {
-          h += `<tr><td class="p-4 border-b border-slate-100"><strong class="text-slate-800">[${ex.code||'-'}] ${ex.name}</strong></td><td colspan="5" class="p-4 border-b border-slate-100 text-center"><span class="text-amber-500 font-bold bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200">รอประกาศผล</span></td></tr>`;
+          h += `<tr><td class="p-4 border-b border-slate-100"><strong class="text-slate-800">[${ex.code||'-'}] ${ex.name}</strong></td><td colspan="5" class="p-4 border-b border-slate-100 text-center"><span class="text-amber-500 font-bold bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200">รอตรวจข้อสอบ</span></td></tr>`;
         } else if (st) {
           const sc = parseFloat(r.score);
           const ts = getTScore(sc, st.mean, st.sd);
@@ -925,8 +927,9 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
           
           doc.autoTable({
             head: head, body: body, startY: 38,
-            styles: { font: window.THSarabunNew_Normal ? 'THSarabunNew' : 'Sarabun', fontSize: 10, cellPadding: 3 },
-            headStyles: { fillColor: [240,244,248], textColor: [15,23,42], fontStyle: 'bold' },
+            theme: 'grid',
+            styles: { font: window.THSarabunNew_Normal ? 'THSarabunNew' : 'Sarabun', fontSize: 12, cellPadding: 4, lineColor: [200, 200, 200], lineWidth: 0.1 },
+            headStyles: { fillColor: [240,244,248], textColor: [15,23,42], fontStyle: 'bold', halign: 'center' },
             didDrawPage: (data) => drawHeader(data, rm.name),
             margin: { top: 38 }
           });
@@ -937,8 +940,9 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
         
         doc.autoTable({
           head: head, body: body, startY: 38,
-          styles: { font: window.THSarabunNew_Normal ? 'THSarabunNew' : 'Sarabun', fontSize: 10, cellPadding: 3 },
-          headStyles: { fillColor: [240,244,248], textColor: [15,23,42], fontStyle: 'bold' },
+          theme: 'grid',
+          styles: { font: window.THSarabunNew_Normal ? 'THSarabunNew' : 'Sarabun', fontSize: 12, cellPadding: 4, lineColor: [200, 200, 200], lineWidth: 0.1 },
+          headStyles: { fillColor: [240,244,248], textColor: [15,23,42], fontStyle: 'bold', halign: 'center' },
           didDrawPage: (data) => drawHeader(data, ''),
           margin: { top: 38 }
         });
@@ -1393,6 +1397,7 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
       dd.classList.remove('hidden');
     }
     
+    let currentAssRegsData = [];
     async function selectSubjScoreExam(id) {
       document.getElementById('ass-dropdown').classList.add('hidden');
       document.getElementById('ass-search').value = '';
@@ -1406,14 +1411,20 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
       
       const st = getExamStats(id, allRegs);
       
-      document.getElementById('ass-stats').innerHTML = st ? `<span class="font-bold text-emerald-600">Mean: ${st.mean.toFixed(2)}</span> | <span class="font-bold text-indigo-600">SD: ${st.sd.toFixed(2)}</span> | <span class="font-bold text-slate-600">ผู้เข้าสอบ: ${st.scores.length} คน</span>` : 'ไม่มีข้อมูลสถิติ (รอลงคะแนน)';
+      let goldCount = 0, silverCount = 0, bronzeCount = 0;
+      let presentCount = 0, absentCount = 0;
+      const totalRegs = myRegs.length;
+      
+      currentAssRegsData = [];
 
       let h=''; myRegs.forEach(r => {
         let scText, tsText='-', prText='-', mdBadge='-', md = null;
         
         if (r.isAbsent || !r.score || r.score.trim() === '') {
+          absentCount++;
           scText = '<span class="text-rose-500 font-bold bg-rose-50 px-2 py-1 rounded text-xs">ขาดสอบ</span>';
         } else {
+          presentCount++;
           const sc = parseFloat(r.score);
           scText = `<span class="font-black text-emerald-600">${sc}</span>`;
           if (st) {
@@ -1425,8 +1436,12 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
         }
         
         const mdBadgeName = md ? md.name : null;
+        if (mdBadgeName === 'เหรียญทอง') goldCount++;
+        else if (mdBadgeName === 'เหรียญเงิน') silverCount++;
+        else if (mdBadgeName === 'เหรียญทองแดง') bronzeCount++;
         
-        const gradeStr = `ม.${r.grade||'-'}/${r.room||'-'} <span class="text-[10px] bg-slate-100 px-1 rounded text-slate-500">ที่ ${r.rollNumber||'-'}</span>`;
+        const g = (r.grade||'').replace(/^ม\.?/, '');
+        const gradeStr = `ม.${g}/${r.room||'-'} <span class="text-[10px] bg-slate-100 px-1 rounded text-slate-500">ที่ ${r.rollNumber||'-'}</span>`;
         let uploadBtn = '-';
         if (mdBadgeName) {
           if (r.certUrl) {
@@ -1452,8 +1467,89 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
           <td class="p-3 border-b border-slate-100 text-center">${mdBadge}</td>
           <td class="p-3 border-b border-slate-100 text-center">${uploadBtn}</td>
         </tr>`;
+        
+        currentAssRegsData.push({
+          "รหัสนักเรียน": r.studentId,
+          "ชื่อ-นามสกุล": `${r.prefix||''}${r.firstName||''} ${r.lastName||''}`,
+          "ชั้น": g,
+          "ห้อง": r.room || '-',
+          "เลขที่": r.rollNumber || '-',
+          "คะแนน": (r.isAbsent || !r.score || r.score.trim() === '') ? 'ขาดสอบ' : parseFloat(r.score),
+          "T-Score": tsText === '-' ? '' : parseFloat(tsText),
+          "PR": prText === '-' ? '' : parseFloat(prText),
+          "รางวัล": mdBadgeName || ''
+        });
       });
       document.getElementById('ass-scores-body').innerHTML = h || '<tr><td colspan="7" class="p-8 text-center text-slate-500">ไม่มีผู้สมัครวิชานี้</td></tr>';
+      
+      const presentPercent = totalRegs > 0 ? ((presentCount / totalRegs) * 100).toFixed(1) : 0;
+      const fullScore = ex.fullScore || '-';
+      let minScore = '-', maxScore = '-';
+      if (st && st.scores.length > 0) {
+        minScore = Math.min(...st.scores);
+        maxScore = Math.max(...st.scores);
+      }
+
+      let statsHtml = '';
+      if (st) {
+        statsHtml = `
+          <div class="grid grid-cols-2 lg:grid-cols-6 gap-3 w-full">
+            <div class="bg-blue-50/80 p-3 rounded-2xl border border-blue-100 flex flex-col items-center justify-center shadow-sm relative overflow-hidden">
+              <div class="absolute -right-4 -bottom-4 opacity-5"><svg class="w-20 h-20" fill="currentColor" viewBox="0 0 24 24"><path d="M12 14l9-5-9-5-9 5 9 5z"></path></svg></div>
+              <span class="text-[10px] text-blue-600 font-bold uppercase tracking-wider mb-1 relative z-10">ผู้เข้าสอบ (N)</span>
+              <span class="text-2xl font-black text-blue-700 relative z-10">${presentCount} <span class="text-sm font-bold text-blue-400">/ ${totalRegs}</span></span>
+              <span class="text-[10px] text-blue-500 mt-1 font-medium relative z-10">ขาดสอบ ${absentCount} (${presentPercent}%)</span>
+            </div>
+            <div class="bg-slate-50/80 p-3 rounded-2xl border border-slate-200 flex flex-col items-center justify-center shadow-sm">
+              <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">คะแนนเต็ม</span>
+              <span class="text-2xl font-black text-slate-700">${fullScore}</span>
+            </div>
+            <div class="bg-emerald-50/80 p-3 rounded-2xl border border-emerald-100 flex flex-col items-center justify-center shadow-sm">
+              <span class="text-[10px] text-emerald-600 font-bold uppercase tracking-wider mb-1">Mean</span>
+              <span class="text-2xl font-black text-emerald-700">${st.mean.toFixed(2)}</span>
+            </div>
+            <div class="bg-indigo-50/80 p-3 rounded-2xl border border-indigo-100 flex flex-col items-center justify-center shadow-sm">
+              <span class="text-[10px] text-indigo-600 font-bold uppercase tracking-wider mb-1">S.D.</span>
+              <span class="text-2xl font-black text-indigo-700">${st.sd.toFixed(2)}</span>
+            </div>
+            <div class="bg-rose-50/80 p-3 rounded-2xl border border-rose-100 flex flex-col items-center justify-center shadow-sm">
+              <span class="text-[10px] text-rose-600 font-bold uppercase tracking-wider mb-1">Min / Max</span>
+              <span class="text-2xl font-black text-rose-700">${minScore} <span class="text-rose-300 text-base font-medium">/</span> ${maxScore}</span>
+            </div>
+            <div class="col-span-2 lg:col-span-1 flex flex-col gap-1.5 justify-center">
+              <div class="flex-1 bg-gradient-to-r from-amber-50 to-amber-100/50 rounded-xl border border-amber-200 flex items-center justify-between px-3 py-1.5 shadow-sm">
+                <span class="text-xs font-bold text-amber-700 drop-shadow-sm">🥇 ทอง</span>
+                <span class="font-black text-amber-600 text-base">${goldCount}</span>
+              </div>
+              <div class="flex-1 bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl border border-slate-300 flex items-center justify-between px-3 py-1.5 shadow-sm">
+                <span class="text-xs font-bold text-slate-600 drop-shadow-sm">🥈 เงิน</span>
+                <span class="font-black text-slate-500 text-base">${silverCount}</span>
+              </div>
+              <div class="flex-1 bg-gradient-to-r from-orange-50 to-orange-100/50 rounded-xl border border-orange-200 flex items-center justify-between px-3 py-1.5 shadow-sm">
+                <span class="text-xs font-bold text-orange-800 drop-shadow-sm">🥉 ทองแดง</span>
+                <span class="font-black text-orange-700 text-base">${bronzeCount}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      } else {
+        statsHtml = '<div class="p-6 bg-slate-50 text-slate-500 rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-2"><svg class="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg><span class="font-medium text-sm">ยังไม่มีข้อมูลคะแนนสำหรับคำนวณสถิติ</span></div>';
+      }
+      
+      const statsContainer = document.getElementById('ass-stats-container');
+      statsContainer.innerHTML = statsHtml;
+      statsContainer.classList.remove('hidden');
+      document.getElementById('ass-actions').classList.remove('hidden');
+      
+      const pubBtn = document.getElementById('btn-publish-scores');
+      if (ex.isScorePublished) {
+        pubBtn.className = "bg-rose-100 text-rose-700 px-4 py-2 rounded-lg font-bold hover:bg-rose-200 transition-colors shadow-sm flex items-center gap-2";
+        pubBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg> ยกเลิกประกาศผล';
+      } else {
+        pubBtn.className = "bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-indigo-700 transition-colors shadow-sm flex items-center gap-2";
+        pubBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path></svg> ประกาศคะแนน';
+      }
+      
       document.getElementById('ass-workspace').classList.remove('hidden');
     }
 
@@ -1547,6 +1643,42 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
           
           await db.put(`registrations/${regId}/certUrl`, null);
           Swal.fire('สำเร็จ', 'ลบเกียรติบัตรแล้ว', 'success');
+          selectSubjScoreExam(currentExamId);
+        }
+      });
+    }
+
+    function exportAssScoresToExcel() {
+      if (!currentAssRegsData || currentAssRegsData.length === 0) {
+        Swal.fire('ข้อผิดพลาด', 'ไม่มีข้อมูลสำหรับดาวน์โหลด', 'error');
+        return;
+      }
+      const ex = allExams.find(x => x.id === currentExamId);
+      const ws = XLSX.utils.json_to_sheet(currentAssRegsData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Scores");
+      XLSX.writeFile(wb, `คะแนนสอบ_${ex.code||''}_${ex.name}.xlsx`);
+    }
+
+    function toggleScorePublish() {
+      const ex = allExams.find(x => x.id === currentExamId);
+      const willPublish = !ex.isScorePublished;
+      
+      Swal.fire({
+        title: willPublish ? 'ยืนยันการประกาศคะแนน?' : 'ยกเลิกการประกาศคะแนน?',
+        text: willPublish ? "นักเรียนทุกคนจะสามารถดูคะแนนของตนเองในหน้านักเรียนได้" : "คะแนนของวิชานี้จะถูกซ่อนจากหน้านักเรียน",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: willPublish ? 'ประกาศคะแนน' : 'ยกเลิกประกาศ',
+        cancelButtonText: 'ปิด',
+        confirmButtonColor: willPublish ? '#4f46e5' : '#e11d48'
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          showLoad(true);
+          ex.isScorePublished = willPublish;
+          await db.put(`exams/${ex.id}/isScorePublished`, willPublish);
+          showLoad(false);
+          Swal.fire('สำเร็จ', willPublish ? 'ประกาศคะแนนเรียบร้อยแล้ว' : 'ยกเลิกประกาศคะแนนแล้ว', 'success');
           selectSubjScoreExam(currentExamId);
         }
       });
@@ -1662,14 +1794,14 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
       
       const ct = ceCerts[examId] || {
         w: 1191, h: 1684, bgBase64: '', isPublished: false,
-        fields: [], conditions: { gold: 80, silver: 60, bronze: 40 }
+        fields: [], conditions: { gold: 95, silver: 85, bronze: 70 }
       };
       
       document.getElementById('ce-w').value = ct.w || 1191;
       document.getElementById('ce-h').value = ct.h || 1684;
-      document.getElementById('ce-cond-gold').value = ct.conditions?.gold || 80;
-      document.getElementById('ce-cond-silver').value = ct.conditions?.silver || 60;
-      document.getElementById('ce-cond-bronze').value = ct.conditions?.bronze || 40;
+      document.getElementById('ce-cond-gold').value = ct.conditions?.gold || 95;
+      document.getElementById('ce-cond-silver').value = ct.conditions?.silver || 85;
+      document.getElementById('ce-cond-bronze').value = ct.conditions?.bronze || 70;
       document.getElementById('ce-is-published').checked = ct.isPublished || false;
       
       const qr = ct.qr || { enabled: false, x: 100, y: 100, size: 150, url: '' };
