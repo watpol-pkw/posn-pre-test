@@ -131,7 +131,7 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
           if(!isMgr) addItem('ad-scores', `<svg class="${iconClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>`, 'บันทึกคะแนน', 'ad-scores');
           addItem('ad-subj-scores', `<svg class="${iconClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 14l9-5-9-5-9 5 9 5z"></path><path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"></path></svg>`, 'คะแนนรายวิชา', 'ad-subj-scores');
           addItem('ad-indiv-scores', `<svg class="${iconClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4"></path></svg>`, 'คะแนนรายบุคคล', 'ad-indiv-scores');
-          addItem('ad-certs', `<svg class="${iconClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>`, 'จัดการเกียรติบัตร', 'ad-certs');
+          
           addItem('ad-reports', `<svg class="${iconClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>`, 'รายงานผล', 'ad-reports');
           if(!isMgr) addItem('ad-announce', `<svg class="${iconClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path></svg>`, 'แจ้งประกาศ', 'ad-announce');
         }
@@ -527,7 +527,7 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
             <td class="p-4 border-b border-slate-100 text-center">
               <div class="flex items-center justify-center gap-2">
                 <button onclick="showScorePopup('${ex.name}', ${sc}, ${ts}, ${pr}, '${md?md.name:''}')" class="bg-indigo-100 text-indigo-700 p-2 rounded-lg hover:bg-indigo-200 transition-colors shadow-sm" title="ดูรายละเอียดคะแนน"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg></button>
-                ${(md && cert && cert.isPublished) ? `<button onclick="downloadCert('${ex.id}', '${ex.name}', '${md.name}', '${r.id}')" class="bg-amber-100 text-amber-700 p-2 rounded-lg hover:bg-amber-200 transition-colors font-bold text-sm flex items-center gap-1 shadow-sm"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path></svg> เกียรติบัตร</button>` : ''}
+                ${md ? (r.certUrl ? `<button onclick="window.open('${r.certUrl}', '_blank')" class="bg-emerald-100 text-emerald-700 p-2 rounded-lg hover:bg-emerald-200 transition-colors font-bold text-sm flex items-center gap-1 shadow-sm"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg> ดูเกียรติบัตร</button>` : `<span class="bg-amber-50 border border-amber-200 text-amber-600 px-2 py-1 rounded text-xs font-bold whitespace-nowrap shadow-sm shadow-amber-100/50">⏳ Pending...</span>`) : ''}
               </div>
             </td>
           </tr>`;
@@ -1405,10 +1405,132 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
           }
         }
         
-        h += `<tr class="hover:bg-slate-50"><td class="p-3 border-b border-slate-100"><strong class="text-slate-800">${r.studentId}</strong><br><span class="text-sm">${r.prefix||''}${r.firstName} ${r.lastName}</span></td><td class="p-3 text-center border-b border-slate-100">${scText}</td><td class="p-3 border-b border-slate-100 text-center font-bold text-slate-600">${tsText}</td><td class="p-3 border-b border-slate-100 text-center font-bold text-slate-600">${prText}</td><td class="p-3 border-b border-slate-100 text-center">${mdBadge}</td></tr>`;
+        const mdBadgeName = md ? md.name : null;
+        
+        const gradeStr = `ม.${r.grade||'-'}/${r.room||'-'} <span class="text-[10px] bg-slate-100 px-1 rounded text-slate-500">ที่ ${r.rollNumber||'-'}</span>`;
+        let uploadBtn = '-';
+        if (mdBadgeName) {
+          if (r.certUrl) {
+            uploadBtn = `<div class="flex flex-col gap-1 items-center">
+             <span class="text-[11px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">✅ อัปโหลดแล้ว</span>
+             <div class="flex gap-1 mt-1">
+               <button onclick="window.open('${r.certUrl}', '_blank')" class="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-1 rounded hover:bg-indigo-100 transition-colors font-bold">ดู</button>
+               <button onclick="uploadCert('${r.regId}', '${ex.id}', '${ex.name}', '${mdBadgeName}', '${r.studentId}')" class="text-[10px] bg-amber-50 text-amber-700 px-2 py-1 rounded hover:bg-amber-100 transition-colors font-bold">แก้</button>
+               <button onclick="deleteCert('${r.regId}', '${r.certUrl}')" class="text-[10px] bg-rose-50 text-rose-600 px-2 py-1 rounded hover:bg-rose-100 transition-colors font-bold">ลบ</button>
+             </div>
+           </div>`;
+          } else {
+            uploadBtn = `<button onclick="uploadCert('${r.regId}', '${ex.id}', '${ex.name}', '${mdBadgeName}', '${r.studentId}')" class="text-[11px] bg-indigo-600 text-white px-3 py-1.5 rounded-lg shadow-sm hover:bg-indigo-700 font-bold flex items-center gap-1 mx-auto transition-colors"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg> อัปโหลด</button>`;
+          }
+        }
+
+        h += `<tr class="hover:bg-slate-50">
+          <td class="p-3 border-b border-slate-100"><strong class="text-slate-800">${r.studentId}</strong><br><span class="text-sm">${r.prefix||''}${r.firstName} ${r.lastName}</span></td>
+          <td class="p-3 border-b border-slate-100 text-center text-sm text-slate-600 whitespace-nowrap">${gradeStr}</td>
+          <td class="p-3 text-center border-b border-slate-100">${scText}</td>
+          <td class="p-3 border-b border-slate-100 text-center font-bold text-slate-600">${tsText}</td>
+          <td class="p-3 border-b border-slate-100 text-center font-bold text-slate-600">${prText}</td>
+          <td class="p-3 border-b border-slate-100 text-center">${mdBadge}</td>
+          <td class="p-3 border-b border-slate-100 text-center">${uploadBtn}</td>
+        </tr>`;
       });
-      document.getElementById('ass-scores-body').innerHTML = h || '<tr><td colspan="5" class="p-8 text-center text-slate-500">ไม่มีผู้สมัครวิชานี้</td></tr>';
+      document.getElementById('ass-scores-body').innerHTML = h || '<tr><td colspan="7" class="p-8 text-center text-slate-500">ไม่มีผู้สมัครวิชานี้</td></tr>';
       document.getElementById('ass-workspace').classList.remove('hidden');
+    }
+
+    async function uploadCert(regId, exId, exName, mdBadgeName, stId) {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'application/pdf,image/jpeg,image/png';
+      input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const ext = file.name.split('.').pop();
+        const filename = `${exId}_${mdBadgeName}_${stId}.${ext}`;
+        const mimeType = file.type;
+        
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          const base64Data = evt.target.result;
+          
+          Swal.fire({ title: 'กำลังอัปโหลด...', html: 'กรุณารอสักครู่ ห้ามปิดหน้าต่างนี้', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+          
+          // URL ของ Web App ที่ Deploy จาก Google Apps Script
+          // ** สำคัญมาก: คุณต้องเปลี่ยน URL นี้เป็นของคุณเอง หลังจาก Deploy Code.gs เป็น Web App **
+          const APPS_SCRIPT_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyjFQHv_a5VGj-x_UhyvKiJqXTCZ5LbAiWd9l1cUv2Ntw6TZrUhQAv9hb5wVGfhzVIvdg/exec";
+
+          if (APPS_SCRIPT_WEB_APP_URL === "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE") {
+             Swal.fire('ข้อผิดพลาด', 'คุณยังไม่ได้ใส่ URL ของ Google Apps Script Web App ในโค้ด (script.js)', 'error');
+             return;
+          }
+
+          fetch(APPS_SCRIPT_WEB_APP_URL, {
+            method: 'POST',
+            redirect: 'follow', // จำเป็นสำหรับ Apps Script
+            body: JSON.stringify({
+              action: 'upload',
+              base64Data: base64Data,
+              mimeType: mimeType,
+              filename: filename,
+              subject: exName,
+              award: mdBadgeName
+            }),
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' } // ป้องกัน preflight error บางกรณี
+          })
+          .then(response => response.json())
+          .then(async res => {
+            if (res.success) {
+              await db.put(`registrations/${regId}/certUrl`, res.url);
+              Swal.fire('สำเร็จ', 'อัปโหลดเกียรติบัตรเรียบร้อยแล้ว', 'success');
+              selectSubjScoreExam(exId);
+            } else {
+              Swal.fire('ผิดพลาด', res.error || 'ไม่สามารถอัปโหลดได้', 'error');
+            }
+          })
+          .catch(err => {
+            console.error(err);
+            Swal.fire('ผิดพลาด', 'เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์', 'error');
+          });
+        };
+        reader.readAsDataURL(file);
+      };
+      input.click();
+    }
+    
+    function deleteCert(regId, fileUrl) {
+      Swal.fire({
+        title: 'ยืนยันการลบ?',
+        text: "คุณต้องการลบเกียรติบัตรใบนี้หรือไม่?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'ลบทิ้ง',
+        cancelButtonText: 'ยกเลิก',
+        confirmButtonColor: '#e11d48'
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          Swal.fire({ title: 'กำลังลบ...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+          
+          const APPS_SCRIPT_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyjFQHv_a5VGj-x_UhyvKiJqXTCZ5LbAiWd9l1cUv2Ntw6TZrUhQAv9hb5wVGfhzVIvdg/exec";
+
+          if (fileUrl && fileUrl.includes('drive') && APPS_SCRIPT_WEB_APP_URL !== "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE") {
+            try {
+              await fetch(APPS_SCRIPT_WEB_APP_URL, {
+                method: 'POST',
+                redirect: 'follow',
+                body: JSON.stringify({ action: 'delete', fileUrl: fileUrl }),
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+              });
+            } catch (err) {
+              console.error("Delete failed:", err);
+            }
+          }
+          
+          await db.put(`registrations/${regId}/certUrl`, null);
+          Swal.fire('สำเร็จ', 'ลบเกียรติบัตรแล้ว', 'success');
+          selectSubjScoreExam(currentExamId);
+        }
+      });
     }
 
     // AD-INDIV-SCORES (V1.6.1)
