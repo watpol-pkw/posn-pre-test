@@ -925,7 +925,7 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
           
           doc.autoTable({
             head: head, body: body, startY: 38,
-            styles: { font: 'Sarabun', fontSize: 10, cellPadding: 3 },
+            styles: { font: window.THSarabunNew_Normal ? 'THSarabunNew' : 'Sarabun', fontSize: 10, cellPadding: 3 },
             headStyles: { fillColor: [240,244,248], textColor: [15,23,42], fontStyle: 'bold' },
             didDrawPage: (data) => drawHeader(data, rm.name),
             margin: { top: 38 }
@@ -937,7 +937,7 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
         
         doc.autoTable({
           head: head, body: body, startY: 38,
-          styles: { font: 'Sarabun', fontSize: 10, cellPadding: 3 },
+          styles: { font: window.THSarabunNew_Normal ? 'THSarabunNew' : 'Sarabun', fontSize: 10, cellPadding: 3 },
           headStyles: { fillColor: [240,244,248], textColor: [15,23,42], fontStyle: 'bold' },
           didDrawPage: (data) => drawHeader(data, ''),
           margin: { top: 38 }
