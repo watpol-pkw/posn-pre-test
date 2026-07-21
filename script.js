@@ -1409,7 +1409,7 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
       document.getElementById('ass-stats').innerHTML = st ? `<span class="font-bold text-emerald-600">Mean: ${st.mean.toFixed(2)}</span> | <span class="font-bold text-indigo-600">SD: ${st.sd.toFixed(2)}</span> | <span class="font-bold text-slate-600">ผู้เข้าสอบ: ${st.scores.length} คน</span>` : 'ไม่มีข้อมูลสถิติ (รอลงคะแนน)';
 
       let h=''; myRegs.forEach(r => {
-        let scText, tsText='-', prText='-', mdBadge='-';
+        let scText, tsText='-', prText='-', mdBadge='-', md = null;
         
         if (r.isAbsent || !r.score || r.score.trim() === '') {
           scText = '<span class="text-rose-500 font-bold bg-rose-50 px-2 py-1 rounded text-xs">ขาดสอบ</span>';
@@ -1419,7 +1419,7 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
           if (st) {
             tsText = getTScore(sc, st.mean, st.sd);
             prText = getPercentileRank(sc, st.scores);
-            const md = getMedal(prText);
+            md = getMedal(prText);
             mdBadge = md ? `<span class="${md.color} ${md.bg} px-2 py-1 rounded text-xs font-bold whitespace-nowrap">🥇 ${md.name}</span>` : '-';
           }
         }
