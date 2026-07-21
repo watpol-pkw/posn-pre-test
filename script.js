@@ -210,14 +210,62 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
         document.getElementById('verify-loading').classList.add('hidden');
         
         let html = `
-          <div class="mb-6"><div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-md"><svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg></div></div>
-          <h2 class="text-2xl font-black text-slate-800 mb-2">ข้อมูลถูกต้อง (Verified)</h2>
-          <p class="text-slate-500 mb-6 font-medium">เกียรติบัตรฉบับนี้ออกโดยโรงเรียนภูเก็ตวิทยาลัย ระบบ POSN PRE-TEST</p>
-          <div class="text-left bg-slate-50 border border-slate-200 rounded-xl p-5 mb-4 space-y-3">
-            <div class="flex flex-col md:flex-row md:items-center border-b border-slate-100 pb-2"><span class="text-sm font-bold text-slate-400 w-32 shrink-0">ชื่อ-สกุล :</span><span class="font-bold text-indigo-700 text-lg">${fullName}</span></div>
-            <div class="flex flex-col md:flex-row md:items-center border-b border-slate-100 pb-2"><span class="text-sm font-bold text-slate-400 w-32 shrink-0">วิชาที่สอบ :</span><span class="font-bold text-slate-800">${ex.name}</span></div>
-            <div class="flex flex-col md:flex-row md:items-center border-b border-slate-100 pb-2"><span class="text-sm font-bold text-slate-400 w-32 shrink-0">รางวัลที่ได้รับ :</span><span class="${md.color} font-black text-lg">${md.name}</span></div>
-            <div class="flex flex-col md:flex-row md:items-center"><span class="text-sm font-bold text-slate-400 w-32 shrink-0">รหัสอ้างอิง :</span><span class="font-medium text-slate-500 text-xs">${regKey}</span></div>
+          <h2 class="text-3xl font-bold text-blue-600 mb-2">Certificate Verification</h2>
+          <p class="text-slate-500 mb-6 font-medium text-sm">ระบบตรวจสอบความถูกต้องของเกียรติบัตร</p>
+          
+          <div class="flex items-center justify-center max-w-sm mx-auto mb-6">
+            <input type="text" value="${regKey}" readonly class="w-full border border-slate-300 rounded-l-lg py-3 px-4 text-lg focus:outline-none" />
+            <button onclick="window.location.reload()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-r-lg text-lg transition-colors">Verify</button>
+          </div>
+
+          <div class="bg-[#e4f0e5] rounded-xl p-5 mb-8 flex items-center justify-center gap-4 text-left max-w-md mx-auto">
+            <div class="w-8 h-8 bg-slate-800 text-white rounded-full flex items-center justify-center shrink-0">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+            <div>
+              <div class="font-bold text-slate-800">Verified Successfully!</div>
+              <div class="text-slate-700 text-sm font-medium">ข้อมูลเกียรติบัตรถูกต้องและมีอยู่ในระบบ</div>
+            </div>
+          </div>
+
+          <div class="text-left max-w-md mx-auto space-y-4 mb-8">
+            <div class="grid grid-cols-3 gap-2">
+              <div class="text-slate-600 font-bold col-span-1">Certificate No.</div>
+              <div class="text-slate-900 font-bold col-span-2">${regKey}</div>
+            </div>
+            <div class="grid grid-cols-3 gap-2">
+              <div class="text-slate-600 font-bold col-span-1">Recipient Name</div>
+              <div class="text-slate-900 font-bold col-span-2">${fullName}</div>
+            </div>
+            <div class="grid grid-cols-3 gap-2">
+              <div class="text-slate-600 font-bold col-span-1">Role / Position</div>
+              <div class="text-slate-900 col-span-2">นักเรียนชั้น ม.${st.grade}</div>
+            </div>
+            <div class="grid grid-cols-3 gap-2">
+              <div class="text-slate-600 font-bold col-span-1">Award</div>
+              <div class="text-rose-600 font-bold col-span-2">${md.name}</div>
+            </div>
+            <div class="grid grid-cols-3 gap-2">
+              <div class="text-slate-600 font-bold col-span-1">Activity</div>
+              <div class="text-slate-900 col-span-2">${ex.name}</div>
+            </div>
+            <div class="grid grid-cols-3 gap-2">
+              <div class="text-slate-600 font-bold col-span-1">Level</div>
+              <div class="text-slate-900 col-span-2">มัธยมศึกษาตอนปลาย</div>
+            </div>
+            <div class="grid grid-cols-3 gap-2">
+              <div class="text-slate-600 font-bold col-span-1">Date</div>
+              <div class="text-slate-900 col-span-2">${formatThaiDate(ex.date)}</div>
+            </div>
+          </div>
+          
+          <div class="mb-4">
+            <button onclick="downloadCert('${ex.id}', '${ex.name}', '${md.name}', '${regKey}')" class="border-2 border-slate-300 text-slate-500 font-medium py-2 px-6 rounded-lg hover:bg-slate-50 transition-colors inline-flex items-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg> View Certificate
+            </button>
+          </div>
+          <div class="inline-block bg-white border border-slate-100 shadow-sm rounded-full px-6 py-2 text-slate-700 font-bold text-sm">
+            posn.pkw.ac.th
           </div>
         `;
         document.getElementById('verify-result').innerHTML = html;
@@ -226,9 +274,16 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
       } catch(e) {
         document.getElementById('verify-loading').classList.add('hidden');
         document.getElementById('verify-result').innerHTML = `
-          <div class="mb-6"><div class="w-20 h-20 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto shadow-md"><svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></div></div>
-          <h2 class="text-2xl font-black text-slate-800 mb-2">ตรวจสอบไม่สำเร็จ</h2>
-          <p class="text-rose-600 font-bold bg-rose-50 p-4 rounded-xl inline-block shadow-inner">${e.message}</p>
+          <h2 class="text-3xl font-bold text-blue-600 mb-2">Certificate Verification</h2>
+          <p class="text-slate-500 mb-6 font-medium text-sm">ระบบตรวจสอบความถูกต้องของเกียรติบัตร</p>
+          <div class="bg-rose-50 rounded-xl p-6 mb-8 text-center max-w-md mx-auto border border-rose-200">
+            <div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </div>
+            <h3 class="text-xl font-bold text-rose-700 mb-2">ตรวจสอบไม่สำเร็จ</h3>
+            <p class="text-rose-600 font-medium">${e.message}</p>
+          </div>
+          <button onclick="window.location.href = window.location.pathname" class="text-slate-400 hover:text-indigo-600 font-bold text-sm transition-colors underline">กลับสู่หน้าหลัก</button>
         `;
         document.getElementById('verify-result').classList.remove('hidden');
       }
@@ -504,7 +559,13 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
         const ct = await db.get(`certificates/${examId}`);
         if(!ct || !ct.isPublished) throw new Error('ยังไม่เผยแพร่');
         
-        const fullName = `${u.prefix||''}${u.firstName} ${u.lastName}`.trim();
+        let stData = u;
+        if (!stData) {
+          const r = await db.get(`registrations/${regKey}`);
+          if (r) stData = await db.get(`users/${r.studentId}`);
+        }
+        if (!stData) throw new Error('ไม่พบข้อมูลนักเรียน');
+        const fullName = `${stData.prefix||''}${stData.firstName} ${stData.lastName}`.trim();
         const cvs = document.createElement('canvas');
         cvs.width = ct.w || 1191;
         cvs.height = ct.h || 1684;
