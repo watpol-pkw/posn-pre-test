@@ -594,7 +594,9 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
         });
         
         if (ct.qr && ct.qr.enabled) {
-          const verifyUrl = window.location.origin + window.location.pathname + '?verify=' + regKey;
+          let baseUrl = ct.qr.url;
+          if (!baseUrl) baseUrl = window.location.origin + window.location.pathname;
+          const verifyUrl = baseUrl + '?verify=' + regKey;
           const qr = new QRious({
             value: verifyUrl,
             size: ct.qr.size || 150,
@@ -1529,11 +1531,12 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
       document.getElementById('ce-cond-bronze').value = ct.conditions?.bronze || 40;
       document.getElementById('ce-is-published').checked = ct.isPublished || false;
       
-      const qr = ct.qr || { enabled: false, x: 100, y: 100, size: 150 };
+      const qr = ct.qr || { enabled: false, x: 100, y: 100, size: 150, url: '' };
       document.getElementById('ce-qr-enabled').checked = qr.enabled;
       document.getElementById('ce-qr-x').value = qr.x;
       document.getElementById('ce-qr-y').value = qr.y;
       document.getElementById('ce-qr-size').value = qr.size;
+      document.getElementById('ce-verify-url').value = qr.url || '';
       
       ceFields = ct.fields ? JSON.parse(JSON.stringify(ct.fields)) : [];
       
@@ -1642,7 +1645,8 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
             <div><label class="text-[10px] text-slate-500 font-bold block mb-1">X (ซ้าย-ขวา)</label><input type="number" value="${f.x}" onchange="ceFields[${idx}].x=parseInt(this.value); ceUpdateCanvas()" class="modern-input !mb-0 !py-1 !px-2 w-full text-xs text-center font-mono"></div>
             <div><label class="text-[10px] text-slate-500 font-bold block mb-1">Y (บน-ล่าง)</label><input type="number" value="${f.y}" onchange="ceFields[${idx}].y=parseInt(this.value); ceUpdateCanvas()" class="modern-input !mb-0 !py-1 !px-2 w-full text-xs text-center font-mono"></div>
           </div>
-          <div class="grid grid-cols-3 gap-2">
+          <div class="grid grid-cols-4 gap-2">
+            <div><label class="text-[10px] text-slate-500 font-bold block mb-1">ฟอนต์</label><select onchange="ceFields[${idx}].font=this.value; ceUpdateCanvas()" class="modern-input !mb-0 !py-1 !px-1 w-full text-xs"><option value="Sarabun" ${f.font==='Sarabun'?'selected':''}>Sarabun</option><option value="Kanit" ${f.font==='Kanit'?'selected':''}>Kanit</option><option value="Prompt" ${f.font==='Prompt'?'selected':''}>Prompt</option><option value="Mitr" ${f.font==='Mitr'?'selected':''}>Mitr</option><option value="Chakra Petch" ${f.font==='Chakra Petch'?'selected':''}>Chakra Petch</option><option value="Mali" ${f.font==='Mali'?'selected':''}>Mali</option><option value="Itim" ${f.font==='Itim'?'selected':''}>Itim</option></select></div>
             <div><label class="text-[10px] text-slate-500 font-bold block mb-1">ขนาด</label><input type="number" value="${f.size}" onchange="ceFields[${idx}].size=parseInt(this.value); ceUpdateCanvas()" class="modern-input !mb-0 !py-1 !px-2 w-full text-xs"></div>
             <div><label class="text-[10px] text-slate-500 font-bold block mb-1">สี</label><input type="color" value="${f.color}" onchange="ceFields[${idx}].color=this.value; ceUpdateCanvas()" class="w-full h-7 rounded border border-slate-200 cursor-pointer"></div>
             <div><label class="text-[10px] text-slate-500 font-bold block mb-1">จัดหน้า</label><select onchange="ceFields[${idx}].align=this.value; ceUpdateCanvas()" class="modern-input !mb-0 !py-1 !px-1 w-full text-xs"><option value="left" ${f.align==='left'?'selected':''}>ซ้าย</option><option value="center" ${f.align==='center'?'selected':''}>กลาง</option><option value="right" ${f.align==='right'?'selected':''}>ขวา</option></select></div>
@@ -1664,6 +1668,7 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
       const qrx = parseInt(document.getElementById('ce-qr-x').value) || 100;
       const qry = parseInt(document.getElementById('ce-qr-y').value) || 100;
       const qrs = parseInt(document.getElementById('ce-qr-size').value) || 150;
+      const qrUrl = document.getElementById('ce-verify-url').value.trim();
       
       let finalBg = '';
       if (ceBgImg && ceBgImg.src && ceBgImg.src.startsWith('data:image')) {
@@ -1681,7 +1686,7 @@ const DB_URL = 'https://posn-registration-default-rtdb.asia-southeast1.firebased
       const data = {
         w, h, bgBase64: finalBg, fields: ceFields,
         conditions: { gold: g, silver: s, bronze: b },
-        qr: { enabled: qrEnabled, x: qrx, y: qry, size: qrs },
+        qr: { enabled: qrEnabled, x: qrx, y: qry, size: qrs, url: qrUrl },
         isPublished: pub, updatedAt: Date.now()
       };
       

@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PKW POSN PRE-TEST</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;700;800&family=Kanit:wght@400;500;700&family=Prompt:wght@400;500;700&family=Mitr:wght@400;500;700&family=Chakra+Petch:wght@400;500;700&family=Mali:wght@400;500;700&family=Itim&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <!-- Chart.js for Reports -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -777,6 +778,10 @@
                 <div><label class="text-[10px] text-slate-500 font-bold block mb-1">Y (บนล่าง)</label><input type="number" id="ce-qr-y" value="100" class="modern-input !mb-0 !py-1 !px-2 w-full text-xs" onchange="ceUpdateCanvas()"></div>
                 <div><label class="text-[10px] text-slate-500 font-bold block mb-1">ขนาด (px)</label><input type="number" id="ce-qr-size" value="150" class="modern-input !mb-0 !py-1 !px-2 w-full text-xs" onchange="ceUpdateCanvas()"></div>
               </div>
+              <div class="mt-2">
+                <label class="text-[10px] text-slate-500 font-bold block mb-1">ลิงก์เว็บไซต์หน้าตรวจสอบ (เช่น https://posn.pkw.ac.th)</label>
+                <input type="text" id="ce-verify-url" placeholder="เว้นว่างเพื่อใช้ลิงก์อัตโนมัติ" class="modern-input !mb-0 !py-1.5 !px-2 w-full text-xs font-mono" onchange="ceUpdateCanvas()">
+              </div>
             </div>
           </div>
           
@@ -844,6 +849,6 @@
     </div>
   </div>
 
-  <script src="script.js?v=1.0.5"></script>
+  <script src="script.js?v=1.0.6"></script>
 </body>
 </html>
